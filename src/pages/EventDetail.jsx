@@ -188,9 +188,14 @@ export default function EventDetail({ eventId, navigate }) {
             📅 {formatDate(event.date)} · {event.time} &nbsp;|&nbsp; 📍 {event.venue}
           </p>
         </div>
-        <button className="btn btn-ghost" onClick={() => navigate({ page: 'rsvp', eventId: event.id, guestId: 'preview' })}>
-          👁 תצוגת אורח
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-ghost" onClick={() => navigate({ page: 'rsvp', eventId: event.id, guestId: 'preview' })}>
+            👁 תצוגת אורח
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate({ page: 'invite-design', eventId: event.id })}>
+            🎨 עצב הזמנה
+          </button>
+        </div>
       </div>
 
       <StatsBar guests={guests} />

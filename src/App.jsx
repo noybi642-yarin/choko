@@ -9,6 +9,7 @@ import EventCreate from './pages/EventCreate';
 import EventDetail from './pages/EventDetail';
 import GuestRSVP from './pages/GuestRSVP';
 import AIAssistant from './pages/AIAssistant';
+import InviteDesign from './pages/InviteDesign';
 
 initStore();
 
@@ -116,6 +117,9 @@ export default function App() {
         )}
         {route.page === 'ai-assistant' && (
           <AIAssistant navigate={navigate} />
+        )}
+        {route.page === 'invite-design' && (
+          <InviteDesign eventId={route.eventId} navigate={navigate} />
         )}
       </main>
     </div>
