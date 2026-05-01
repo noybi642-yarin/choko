@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PhoneRSVP from './PhoneRSVP';
 import { Steps, Features, Pricing, FooterCTA } from './Sections';
 
-function Nav({ onLogin }) {
+function Nav() {
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -13,8 +13,8 @@ function Nav({ onLogin }) {
           <a href="#pricing">תמחור</a>
         </div>
         <div className="nav-cta">
-          <button className="btn btn-ghost" onClick={onLogin}>כניסה</button>
-          <button className="btn btn-primary" onClick={onLogin}>יצירת אירוע</button>
+          <a href="#/login" className="btn btn-ghost">כניסה</a>
+          <a href="#/login" className="btn btn-primary">יצירת אירוע</a>
         </div>
       </div>
     </nav>
@@ -42,7 +42,7 @@ function Hero({ variant, eventType, showInviteCards, onCta }) {
           </h1>
           <p className="sub">{h.sub}</p>
           <div className="hero-ctas">
-            <button className="btn btn-coral" onClick={onCta}>יצירת הזמנה — חינם</button>
+            <a href="#/login" className="btn btn-coral">יצירת הזמנה — חינם</a>
             <a href="#how" className="btn btn-ghost">איך זה עובד?</a>
           </div>
           <div className="hero-meta">
@@ -80,10 +80,10 @@ function Hero({ variant, eventType, showInviteCards, onCta }) {
   );
 }
 
-export default function Landing({ onLogin }) {
+export default function Landing() {
   return (
     <>
-      <Nav onLogin={onLogin} />
+      <Nav />
       <Hero variant="b" eventType="wedding" showInviteCards={true} onCta={onLogin} />
       <Steps />
       <Features />

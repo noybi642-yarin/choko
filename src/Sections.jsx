@@ -178,7 +178,7 @@ export function Pricing({ onCta }) {
               <ul className="price-feat">
                 {t.feats.map(f => <li key={f}>{f}</li>)}
               </ul>
-              <button className="price-cta" onClick={onCta}>{t.cta}</button>
+              <a href="#/login" className="price-cta" style={{display:'block',textAlign:'center',textDecoration:'none'}}>{t.cta}</a>
             </div>
           ))}
         </div>
@@ -195,7 +195,7 @@ export function FooterCTA({ onCta }) {
         <div className="cta-card">
           <h2>מוכנים להפוך את האירוע <em>שלכם</em><br />לכזה שלא שוכחים?</h2>
           <p>הירשמו עכשיו וצרו את ההזמנה הראשונה שלכם בחינם. בלי אשראי, בלי התחייבות.</p>
-          <form className="cta-form" onSubmit={(e) => { e.preventDefault(); if (onCta) onCta(); }}>
+          <form className="cta-form" onSubmit={(e) => { e.preventDefault(); window.location.hash = '/login'; }}>
             <input type="email" placeholder="האימייל שלך" value={email} onChange={e => setEmail(e.target.value)} required />
             <button type="submit">בואו נתחיל →</button>
           </form>
