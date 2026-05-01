@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
 import { getEvent, getGuests, addGuest, updateGuestStatus, deleteGuest } from '../store';
+import ImportGuests from '../components/ImportGuests';
 
 const STATUS_LABEL  = { coming: 'מגיע/ה', maybe: 'אולי', no: 'לא מגיע/ה', pending: 'ממתין/ה' };
 const STATUS_COLOR  = { coming: 'green', maybe: 'yellow', no: 'red', pending: 'gray' };
 const STATUS_EMOJI  = { coming: '✅', maybe: '🤔', no: '❌', pending: '⏳' };
+
+const GROUP_PALETTE = [
+  '#fff3e0','#e8f5e9','#e3f2fd','#fce4ec','#f3e5f5',
+  '#e0f7fa','#fff8e1','#fbe9e7','#e8eaf6','#e0f2f1',
+];
+const _groupColors = {};
+let _ci = 0;
+function groupColor(g) {
+  if (!g) return 'transparent';
+  if (!_groupColors[g]) _groupColors[g] = GROUP_PALETTE[_ci++ % GROUP_PALETTE.length];
+  return _groupColors[g];
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -81,6 +94,11 @@ function GuestRow({ guest, eventId, onChange }) {
       <td className="guest-name">{guest.name}</td>
       <td className="guest-phone">{guest.phone || '—'}</td>
       <td>
+        {guest.group
+          ? <span className="group-tag" style={{ background: groupColor(guest.group) }}>{guest.group}</span>
+          : <span style={{ color: '#bbb' }}>—</span>}
+      </td>
+      <td>
         {editing ? (
           <select value={status} onChange={e => setStatus(e.target.value)} className="status-select">
             <option value="pending">⏳ ממתין/ה</option>
@@ -121,9 +139,11 @@ function GuestRow({ guest, eventId, onChange }) {
 }
 
 export default function EventDetail({ eventId, navigate }) {
-  const [event, setEvent]   = useState(null);
-  const [guests, setGuests] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [event, setEvent]       = useState(null);
+  const [guests, setGuests]     = useState([]);
+  const [filter, setFilter]     = useState('all');
+  const [groupFilter, setGroupFilter] = useState('all');
+  const [showImport, setShowImport]   = useState(false);
 
   const load = () => {
     setEvent(getEvent(eventId));
@@ -134,18 +154,32 @@ export default function EventDetail({ eventId, navigate }) {
 
   if (!event) return <div className="page-content"><p>האירוע לא נמצא.</p></div>;
 
-  const filtered = filter === 'all' ? guests : guests.filter(g => g.status === filter);
+  const groups = [...new Set(guests.map(g => g.group).filter(Boolean))].sort();
 
-  const tabs = [
-    { key: 'all',     label: 'הכל',         count: guests.length },
-    { key: 'coming',  label: 'אישרו',        count: guests.filter(g => g.status === 'coming').length },
-    { key: 'maybe',   label: 'אולי',         count: guests.filter(g => g.status === 'maybe').length },
-    { key: 'no',      label: 'לא מגיעים',   count: guests.filter(g => g.status === 'no').length },
-    { key: 'pending', label: 'ממתינים',      count: guests.filter(g => g.status === 'pending').length },
+  const filtered = guests.filter(g => {
+    const statusOk = filter === 'all' || g.status === filter;
+    const groupOk  = groupFilter === 'all' || g.group === groupFilter;
+    return statusOk && groupOk;
+  });
+
+  const statusTabs = [
+    { key: 'all',     label: 'הכל',       count: guests.length },
+    { key: 'coming',  label: 'אישרו',      count: guests.filter(g => g.status === 'coming').length },
+    { key: 'maybe',   label: 'אולי',       count: guests.filter(g => g.status === 'maybe').length },
+    { key: 'no',      label: 'לא מגיעים', count: guests.filter(g => g.status === 'no').length },
+    { key: 'pending', label: 'ממתינים',    count: guests.filter(g => g.status === 'pending').length },
   ];
 
   return (
     <div className="page-content">
+      {showImport && (
+        <ImportGuests
+          eventId={event.id}
+          onDone={load}
+          onClose={() => setShowImport(false)}
+        />
+      )}
+
       <div className="page-header">
         <div>
           <button className="back-btn" onClick={() => navigate({ page: 'dashboard' })}>← חזרה</button>
@@ -164,11 +198,17 @@ export default function EventDetail({ eventId, navigate }) {
       <div className="section-card">
         <div className="section-card-header">
           <h2>רשימת אורחים</h2>
-          <AddGuestForm eventId={event.id} onAdded={load} />
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="btn btn-ghost import-btn" onClick={() => setShowImport(true)}>
+              📥 ייבוא מאקסל
+            </button>
+            <AddGuestForm eventId={event.id} onAdded={load} />
+          </div>
         </div>
 
+        {/* Status filter tabs */}
         <div className="filter-tabs">
-          {tabs.map(t => (
+          {statusTabs.map(t => (
             <button
               key={t.key}
               className={`filter-tab ${filter === t.key ? 'active' : ''}`}
@@ -179,6 +219,29 @@ export default function EventDetail({ eventId, navigate }) {
           ))}
         </div>
 
+        {/* Group filter chips */}
+        {groups.length > 0 && (
+          <div className="group-filters">
+            <button
+              className={`group-chip ${groupFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setGroupFilter('all')}
+            >
+              כל הקבוצות
+            </button>
+            {groups.map(g => (
+              <button
+                key={g}
+                className={`group-chip ${groupFilter === g ? 'active' : ''}`}
+                style={groupFilter === g ? {} : { background: groupColor(g) }}
+                onClick={() => setGroupFilter(g === groupFilter ? 'all' : g)}
+              >
+                {g}
+                <span className="tab-count">{guests.filter(gg => gg.group === g).length}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {filtered.length === 0 ? (
           <div className="empty-table">אין אורחים בקטגוריה זו</div>
         ) : (
@@ -188,6 +251,7 @@ export default function EventDetail({ eventId, navigate }) {
                 <tr>
                   <th>שם</th>
                   <th>טלפון</th>
+                  <th>קבוצה</th>
                   <th>סטטוס</th>
                   <th>מספר אנשים</th>
                   <th>פעולות</th>

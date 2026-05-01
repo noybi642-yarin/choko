@@ -102,11 +102,28 @@ export function getGuests(eventId) {
   return (getStore().guests || []).filter(g => g.eventId === eventId);
 }
 
-export function addGuest(eventId, name, phone) {
+export function addGuest(eventId, name, phone, group = '') {
   const s = getStore();
-  const guest = { id: 'g-' + Date.now(), eventId, name, phone, status: 'pending', guests: 0 };
+  const guest = { id: 'g-' + Date.now(), eventId, name, phone, group, status: 'pending', guests: 0 };
   setStore({ ...s, guests: [...(s.guests || []), guest] });
   return guest;
+}
+
+export function importGuests(eventId, rows) {
+  // rows: [{ name, phone, group }]
+  const s = getStore();
+  const now = Date.now();
+  const newGuests = rows.map((r, i) => ({
+    id: 'g-' + (now + i),
+    eventId,
+    name: r.name,
+    phone: r.phone || '',
+    group: r.group || '',
+    status: 'pending',
+    guests: 0,
+  }));
+  setStore({ ...s, guests: [...(s.guests || []), ...newGuests] });
+  return newGuests.length;
 }
 
 export function updateGuestStatus(guestId, status, guestCount) {

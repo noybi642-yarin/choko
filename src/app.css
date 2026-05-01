@@ -605,6 +605,134 @@
 }
 .link-btn:hover { text-decoration: underline; }
 
+/* ===== Group tags & chips ===== */
+.group-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+}
+.group-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.group-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.group-chip.active {
+  border-color: var(--coral);
+  background: var(--coral);
+  color: white;
+}
+.group-chip.active .tab-count { background: rgba(255,255,255,0.25); color: white; }
+
+/* ===== Import button ===== */
+.import-btn { font-size: 14px; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-box {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-header h2 { font-size: 18px; margin: 0; }
+.modal-close {
+  background: none; border: none; font-size: 18px;
+  cursor: pointer; color: var(--muted); padding: 4px 8px;
+  border-radius: 8px;
+}
+.modal-close:hover { background: var(--surface); }
+
+/* Import steps */
+.import-upload-step,
+.import-preview-step,
+.import-done-step {
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.drop-zone:hover, .drop-zone.loading {
+  border-color: var(--coral);
+  background: oklch(0.97 0.02 30);
+}
+.drop-icon { font-size: 40px; }
+.drop-title { font-size: 16px; font-weight: 700; color: var(--ink); }
+.drop-sub { font-size: 14px; color: var(--muted); }
+.drop-formats { font-size: 12px; color: var(--muted); background: var(--surface); padding: 3px 10px; border-radius: 20px; }
+.import-error {
+  background: #fff0f0; border: 1px solid #ffcccc;
+  color: #c0392b; padding: 10px 14px; border-radius: 10px; font-size: 14px;
+}
+.import-hint-box {
+  background: var(--surface); border-radius: 12px; padding: 14px 18px; font-size: 13px;
+}
+.import-hint-box ul { margin: 6px 0 0 0; padding-right: 18px; }
+.import-hint-box li { margin-bottom: 4px; color: var(--muted); }
+.import-hint-box code { background: white; padding: 1px 5px; border-radius: 4px; font-size: 12px; border: 1px solid var(--border); }
+
+.preview-summary { font-size: 15px; }
+.preview-groups { display: flex; flex-wrap: wrap; gap: 8px; }
+.group-badge {
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; color: #444;
+}
+.preview-table-wrap {
+  max-height: 300px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 12px;
+}
+.preview-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.preview-table th { padding: 8px 12px; background: var(--surface); text-align: right; font-weight: 600; position: sticky; top: 0; }
+.preview-table td { padding: 7px 12px; border-top: 1px solid var(--border); }
+.preview-more { padding: 10px; text-align: center; font-size: 13px; color: var(--muted); }
+
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+.import-done-step { align-items: center; padding: 40px 24px; }
+.done-icon { font-size: 52px; }
+.import-done-step h3 { font-size: 20px; margin: 0; }
+.import-done-step p { color: var(--muted); }
+
 /* ===== AI Assistant ===== */
 .ai-page { display: flex; flex-direction: column; height: 100%; }
 .ai-chat-wrap {
