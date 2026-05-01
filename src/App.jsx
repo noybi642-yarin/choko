@@ -77,6 +77,7 @@ export default function App() {
   const hash = useHash();
   const [user, setUser] = useState(() => getSession());
   const route = parseRoute(hash);
+  const currentUser = user || getSession();
 
   // RSVP page is always public — no auth needed
   if (route.page === 'rsvp') {
@@ -91,12 +92,12 @@ export default function App() {
 
   // Login page
   if (route.page === 'login') {
-    if (user) { navigate('/dashboard'); return null; }
+    if (currentUser) { navigate('/dashboard'); return null; }
     return <Login onSuccess={(u) => { setUser(u); navigate('/dashboard'); }} />;
   }
 
   // Auth guard
-  if (!user) {
+  if (!currentUser) {
     navigate('/login');
     return null;
   }
@@ -104,7 +105,7 @@ export default function App() {
   // App shell with sidebar
   return (
     <div className="app-shell">
-      <AppSidebar user={user} currentPage={route.page} />
+      <AppSidebar user={currentUser} currentPage={route.page} />
       <main className="app-main">
         {route.page === 'dashboard' && (
           <Dashboard user={user} navigate={navigate} />
