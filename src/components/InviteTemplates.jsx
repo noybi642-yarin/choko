@@ -363,7 +363,7 @@ export function renderTemplate(templateId, data) {
 export function TemplateThumbnail({ template, selected, onClick }) {
   const C = RENDERERS[template.id];
   const sample = {
-    eventType: 'חתונה', coupleNames: 'ירין & עמורה',
+    eventType: 'חתונה', coupleNames: 'נוי & ירין',
     subtitle: 'בלב מלא אהבה ובהתרגשות רבה,\nאנו מזמינים אתכם לחגוג עמנו',
     hebrewDate: 'יום שני, כ"ג בסיוון תשפ"ו', date: '08.06.2026',
     receptionTime: '19:00', ceremonyTime: '20:00',
