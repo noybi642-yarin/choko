@@ -122,7 +122,7 @@ export function Features() {
   );
 }
 
-export function Pricing() {
+export function Pricing({ onCta }) {
   const tiers = [
     {
       name: 'אירוע אינטימי',
@@ -178,7 +178,7 @@ export function Pricing() {
               <ul className="price-feat">
                 {t.feats.map(f => <li key={f}>{f}</li>)}
               </ul>
-              <button className="price-cta">{t.cta}</button>
+              <button className="price-cta" onClick={onCta}>{t.cta}</button>
             </div>
           ))}
         </div>
@@ -187,18 +187,17 @@ export function Pricing() {
   );
 }
 
-export function FooterCTA() {
+export function FooterCTA({ onCta }) {
   const [email, setEmail] = useState('');
-  const [done, setDone] = useState(false);
   return (
     <>
       <section className="cta-block" id="signup">
         <div className="cta-card">
           <h2>מוכנים להפוך את האירוע <em>שלכם</em><br />לכזה שלא שוכחים?</h2>
           <p>הירשמו עכשיו וצרו את ההזמנה הראשונה שלכם בחינם. בלי אשראי, בלי התחייבות.</p>
-          <form className="cta-form" onSubmit={(e) => { e.preventDefault(); if (email) setDone(true); }}>
+          <form className="cta-form" onSubmit={(e) => { e.preventDefault(); if (onCta) onCta(); }}>
             <input type="email" placeholder="האימייל שלך" value={email} onChange={e => setEmail(e.target.value)} required />
-            <button type="submit">{done ? '✓ רשום!' : 'בואו נתחיל'}</button>
+            <button type="submit">בואו נתחיל →</button>
           </form>
         </div>
       </section>
