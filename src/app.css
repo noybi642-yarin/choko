@@ -605,6 +605,91 @@
 }
 .link-btn:hover { text-decoration: underline; }
 
+/* ===== Legal modal ===== */
+.legal-modal { max-width: 680px; }
+.legal-body {
+  padding: 24px 28px;
+  max-height: 65vh;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+.legal-body .legal-title { display: none; }
+.legal-updated { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+.legal-section {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 22px 0 6px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.legal-para { margin: 4px 0; color: #444; }
+.legal-bullet {
+  padding-right: 8px;
+  color: #555;
+  margin: 2px 0;
+}
+.legal-bullet::before { content: ''; }
+.legal-spacer { height: 6px; }
+.legal-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Footer legal buttons */
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: none;
+  opacity: 0.75;
+  transition: opacity .15s;
+}
+.footer-link-btn:hover { opacity: 1; text-decoration: underline; }
+
+/* Terms checkbox in login */
+.terms-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  cursor: pointer;
+  text-align: right;
+}
+.terms-checkbox {
+  width: 17px; height: 17px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--coral);
+  cursor: pointer;
+}
+.terms-checkbox-label {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.terms-link {
+  background: none;
+  border: none;
+  color: var(--coral);
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.terms-link:hover { opacity: 0.8; }
+
 /* ===== Invite Designer ===== */
 .inv-steps {
   display: flex;

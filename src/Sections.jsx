@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import LegalModal from './components/LegalModal';
 
 export function Steps() {
   const steps = [
@@ -188,14 +189,18 @@ export function Pricing({ onCta }) {
 }
 
 export function FooterCTA({ onCta }) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail]   = useState('');
+  const [legal, setLegal]   = useState(null); // 'terms' | 'privacy' | null
+
   return (
     <>
+      {legal && <LegalModal type={legal} onClose={() => setLegal(null)} />}
+
       <section className="cta-block" id="signup">
         <div className="cta-card">
           <h2>מוכנים להפוך את האירוע <em>שלכם</em><br />לכזה שלא שוכחים?</h2>
           <p>הירשמו עכשיו וצרו את ההזמנה הראשונה שלכם בחינם. בלי אשראי, בלי התחייבות.</p>
-          <form className="cta-form" onSubmit={(e) => { e.preventDefault(); window.location.hash = '/login'; }}>
+          <form className="cta-form" onSubmit={(e) => { e.preventDefault(); onCta && onCta(); }}>
             <input type="email" placeholder="האימייל שלך" value={email} onChange={e => setEmail(e.target.value)} required />
             <button type="submit">בואו נתחיל →</button>
           </form>
@@ -203,8 +208,8 @@ export function FooterCTA({ onCta }) {
       </section>
       <footer className="footer">
         <div className="footer-links">
-          <a href="#">תנאי שימוש</a>
-          <a href="#">פרטיות</a>
+          <button className="footer-link-btn" onClick={() => setLegal('terms')}>תנאי שימוש</button>
+          <button className="footer-link-btn" onClick={() => setLegal('privacy')}>פרטיות</button>
           <a href="#">תמיכה</a>
           <a href="#">בלוג</a>
           <a href="#">קריירה</a>
