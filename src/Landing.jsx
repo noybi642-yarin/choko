@@ -20,7 +20,7 @@ function Nav({ onLogin }) {
   );
 }
 
-export default function Landing({ onLogin }) {
+export default function Landing({ onLogin, onAI }) {
   return (
     <>
       <Nav onLogin={onLogin} />
@@ -42,6 +42,7 @@ export default function Landing({ onLogin }) {
             </p>
             <div className="hero-ctas">
               <button className="btn btn-coral" onClick={onLogin}>יצירת הזמנה — חינם</button>
+              <button className="btn btn-ai" onClick={onAI}>✨ חברי הטוב AI</button>
               <a href="#how" className="btn btn-ghost">איך זה עובד?</a>
             </div>
             <div className="hero-meta">
