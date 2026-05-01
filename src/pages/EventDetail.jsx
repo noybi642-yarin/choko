@@ -148,15 +148,15 @@ export default function EventDetail({ eventId, navigate }) {
     <div className="page-content">
       <div className="page-header">
         <div>
-          <button className="back-btn" onClick={() => navigate('/dashboard')}>← חזרה</button>
+          <button className="back-btn" onClick={() => navigate({ page: 'dashboard' })}>← חזרה</button>
           <h1 className="page-title">{event.title}</h1>
           <p className="page-sub">
             📅 {formatDate(event.date)} · {event.time} &nbsp;|&nbsp; 📍 {event.venue}
           </p>
         </div>
-        <a className="btn btn-ghost" href={`#/rsvp/${event.id}/preview`} target="_blank" rel="noreferrer">
+        <button className="btn btn-ghost" onClick={() => navigate({ page: 'rsvp', eventId: event.id, guestId: 'preview' })}>
           👁 תצוגת אורח
-        </a>
+        </button>
       </div>
 
       <StatsBar guests={guests} />

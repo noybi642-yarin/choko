@@ -11,34 +11,10 @@ import GuestRSVP from './pages/GuestRSVP';
 
 initStore();
 
-function useHash() {
-  const [hash, setHash] = useState(() => window.location.hash.slice(1) || '/');
-  useEffect(() => {
-    const handler = () => setHash(window.location.hash.slice(1) || '/');
-    window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
-  }, []);
-  return hash;
-}
+// ── Tiny state-based router (no hashchange dependency) ────────────────────────
+// route: { page, eventId?, guestId? }
 
-function navigate(path) {
-  window.location.hash = path;
-}
-
-function parseRoute(hash) {
-  const parts = hash.split('/').filter(Boolean);
-  if (!parts.length)           return { page: 'landing' };
-  if (parts[0] === 'login')    return { page: 'login' };
-  if (parts[0] === 'signup')   return { page: 'login' };
-  if (parts[0] === 'dashboard')return { page: 'dashboard' };
-  if (parts[0] === 'events' && parts[1] === 'new') return { page: 'event-create' };
-  if (parts[0] === 'events' && parts[1]) return { page: 'event-detail', eventId: parts[1] };
-  if (parts[0] === 'rsvp' && parts[1])   return { page: 'rsvp', eventId: parts[1], guestId: parts[2] };
-  return { page: 'landing' };
-}
-
-function AppSidebar({ user, currentPage }) {
-  const handleLogout = () => { logout(); navigate('/'); };
+function AppSidebar({ user, currentPage, navigate, onLogout }) {
   return (
     <aside className="app-sidebar">
       <div className="sidebar-logo">
@@ -47,16 +23,12 @@ function AppSidebar({ user, currentPage }) {
       <nav className="sidebar-nav">
         <button
           className={`sidebar-link ${currentPage === 'dashboard' ? 'active' : ''}`}
-          onClick={() => navigate('/dashboard')}
-        >
-          🏠 האירועים שלי
-        </button>
+          onClick={() => navigate({ page: 'dashboard' })}
+        >🏠 האירועים שלי</button>
         <button
           className={`sidebar-link ${currentPage === 'event-create' ? 'active' : ''}`}
-          onClick={() => navigate('/events/new')}
-        >
-          ➕ אירוע חדש
-        </button>
+          onClick={() => navigate({ page: 'event-create' })}
+        >➕ אירוע חדש</button>
       </nav>
       <div className="sidebar-bottom">
         <div className="sidebar-user">
@@ -66,47 +38,67 @@ function AppSidebar({ user, currentPage }) {
             <div className="sidebar-user-email">{user.email}</div>
           </div>
         </div>
-        <button className="sidebar-logout" onClick={handleLogout}>
-          🚪 התנתקות
-        </button>
+        <button className="sidebar-logout" onClick={onLogout}>🚪 התנתקות</button>
       </div>
     </aside>
   );
 }
 
 export default function App() {
-  const hash = useHash();
-  const [user, setUser] = useState(() => getSession());
-  const route = parseRoute(hash);
-  const currentUser = user || getSession();
+  const [user, setUser]   = useState(() => getSession());
+  const [route, setRoute] = useState(() => {
+    // Support direct RSVP links via URL hash on first load
+    const h = window.location.hash.slice(1);
+    const m = h.match(/^\/rsvp\/([^/]+)(?:\/([^/]+))?$/);
+    if (m) return { page: 'rsvp', eventId: m[1], guestId: m[2] };
+    return { page: user ? 'dashboard' : 'landing' };
+  });
 
-  // RSVP page is always public — no auth needed
+  // Keep URL hash in sync so RSVP links remain shareable
+  useEffect(() => {
+    if (route.page === 'rsvp') {
+      window.location.hash = `/rsvp/${route.eventId}${route.guestId ? '/' + route.guestId : ''}`;
+    } else if (route.page === 'dashboard' || route.page === 'event-create') {
+      window.location.hash = '/' + route.page;
+    } else if (route.page === 'event-detail') {
+      window.location.hash = '/events/' + route.eventId;
+    }
+  }, [route]);
+
+  const navigate = (r) => setRoute(r);
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    setRoute({ page: 'landing' });
+  };
+
+  const handleLogin = (u) => {
+    setUser(u);
+    setRoute({ page: 'dashboard' });
+  };
+
+  // ── Public RSVP page (no auth) ──────────────────────────────────────────────
   if (route.page === 'rsvp') {
-    return <GuestRSVP eventId={route.eventId} guestId={route.guestId} />;
+    return <GuestRSVP
+      eventId={route.eventId}
+      guestId={route.guestId}
+      onBack={() => setRoute({ page: user ? 'dashboard' : 'landing' })}
+    />;
   }
 
-  // Landing page
-  if (route.page === 'landing') {
-    if (user) { navigate('/dashboard'); return null; }
-    return <Landing onLogin={() => navigate('/login')} />;
+  // ── Not logged in ───────────────────────────────────────────────────────────
+  if (!user) {
+    if (route.page === 'login') {
+      return <Login onSuccess={handleLogin} onBack={() => setRoute({ page: 'landing' })} />;
+    }
+    return <Landing onLogin={() => setRoute({ page: 'login' })} />;
   }
 
-  // Login page
-  if (route.page === 'login') {
-    if (currentUser) { navigate('/dashboard'); return null; }
-    return <Login onSuccess={(u) => { setUser(u); navigate('/dashboard'); }} />;
-  }
-
-  // Auth guard
-  if (!currentUser) {
-    navigate('/login');
-    return null;
-  }
-
-  // App shell with sidebar
+  // ── Logged-in app shell ─────────────────────────────────────────────────────
   return (
     <div className="app-shell">
-      <AppSidebar user={currentUser} currentPage={route.page} />
+      <AppSidebar user={user} currentPage={route.page} navigate={navigate} onLogout={handleLogout} />
       <main className="app-main">
         {route.page === 'dashboard' && (
           <Dashboard user={user} navigate={navigate} />

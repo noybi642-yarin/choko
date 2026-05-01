@@ -70,7 +70,7 @@ export default function Dashboard({ user, navigate }) {
           <h1 className="page-title">שלום, {user.name} 👋</h1>
           <p className="page-sub">ניהול האירועים שלך</p>
         </div>
-        <button className="btn btn-primary" onClick={() => navigate('/events/new')}>
+        <button className="btn btn-primary" onClick={() => navigate({ page: 'event-create' })}>
           + צור אירוע חדש
         </button>
       </div>
@@ -80,7 +80,7 @@ export default function Dashboard({ user, navigate }) {
           <div className="empty-icon">🎉</div>
           <h3>אין אירועים עדיין</h3>
           <p>צור את האירוע הראשון שלך ותתחיל לנהל אורחים</p>
-          <button className="btn btn-primary" onClick={() => navigate('/events/new')}>צור אירוע</button>
+          <button className="btn btn-primary" onClick={() => navigate({ page: 'event-create' })}>צור אירוע</button>
         </div>
       ) : (
         <div className="events-grid">
@@ -88,7 +88,7 @@ export default function Dashboard({ user, navigate }) {
             <EventCard
               key={ev.id}
               event={ev}
-              onOpen={id => navigate('/events/' + id)}
+              onOpen={id => navigate({ page: 'event-detail', eventId: id })}
               onDelete={handleDelete}
             />
           ))}

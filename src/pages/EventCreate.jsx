@@ -21,7 +21,7 @@ export default function EventCreate({ user, navigate }) {
     setSaving(true);
     setTimeout(() => {
       const ev = createEvent({ type, title, date, time, venue }, user.email);
-      navigate('/events/' + ev.id);
+      navigate({ page: 'event-detail', eventId: ev.id });
     }, 400);
   };
 
@@ -29,7 +29,7 @@ export default function EventCreate({ user, navigate }) {
     <div className="page-content">
       <div className="page-header">
         <div>
-          <button className="back-btn" onClick={() => navigate('/dashboard')}>← חזרה</button>
+          <button className="back-btn" onClick={() => navigate({ page: 'dashboard' })}>← חזרה</button>
           <h1 className="page-title">אירוע חדש</h1>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function EventCreate({ user, navigate }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => navigate('/dashboard')}>ביטול</button>
+            <button type="button" className="btn btn-ghost" onClick={() => navigate({ page: 'dashboard' })}>ביטול</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? <span className="spinner"></span> : 'צור אירוע ←'}
             </button>
