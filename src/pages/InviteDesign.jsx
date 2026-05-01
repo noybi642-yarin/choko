@@ -39,7 +39,7 @@ export default function InviteDesign({ eventId, navigate }) {
   const event = getEvent(eventId);
 
   const [step, setStep]         = useState('pick');
-  const [templateId, setTemplateId] = useState('israeli-classic');
+  const [templateId, setTemplateId] = useState('wedding-romantic');
   const [data, setData] = useState(() => ({
     eventType:       event ? (EVENT_TYPE_LABEL[event.type] || 'אירוע') : 'אירוע',
     coupleNames:     event?.title || '',
@@ -80,7 +80,7 @@ export default function InviteDesign({ eventId, navigate }) {
     setTimeout(() => w.print(), 700);
   };
 
-  const isWeddingTemplate = templateId === 'israeli-classic';
+  const isWeddingTemplate = ['wedding-romantic','wedding-vintage','wedding-minimal','wedding-garden','wedding-artdeco'].includes(templateId);
 
   return (
     <div className="page-content">
