@@ -29,6 +29,7 @@ function parseRoute(hash) {
   const parts = hash.split('/').filter(Boolean);
   if (!parts.length)           return { page: 'landing' };
   if (parts[0] === 'login')    return { page: 'login' };
+  if (parts[0] === 'signup')   return { page: 'login' };
   if (parts[0] === 'dashboard')return { page: 'dashboard' };
   if (parts[0] === 'events' && parts[1] === 'new') return { page: 'event-create' };
   if (parts[0] === 'events' && parts[1]) return { page: 'event-detail', eventId: parts[1] };
