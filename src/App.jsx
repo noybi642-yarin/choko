@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import EventCreate from './pages/EventCreate';
 import EventDetail from './pages/EventDetail';
 import GuestRSVP from './pages/GuestRSVP';
+import AIAssistant from './pages/AIAssistant';
 
 initStore();
 
@@ -29,6 +30,10 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
           className={`sidebar-link ${currentPage === 'event-create' ? 'active' : ''}`}
           onClick={() => navigate({ page: 'event-create' })}
         >➕ אירוע חדש</button>
+        <button
+          className={`sidebar-link ${currentPage === 'ai-assistant' ? 'active' : ''}`}
+          onClick={() => navigate({ page: 'ai-assistant' })}
+        >✨ חברי הטוב AI</button>
       </nav>
       <div className="sidebar-bottom">
         <div className="sidebar-user">
@@ -75,7 +80,7 @@ export default function App() {
 
   const handleLogin = (u) => {
     setUser(u);
-    setRoute({ page: 'dashboard' });
+    setRoute(route.then ? { page: route.then } : { page: 'dashboard' });
   };
 
   // ── Public RSVP page (no auth) ──────────────────────────────────────────────
@@ -92,7 +97,7 @@ export default function App() {
     if (route.page === 'login') {
       return <Login onSuccess={handleLogin} onBack={() => setRoute({ page: 'landing' })} />;
     }
-    return <Landing onLogin={() => setRoute({ page: 'login' })} />;
+    return <Landing onLogin={() => setRoute({ page: 'login' })} onAI={() => setRoute({ page: 'login', then: 'ai-assistant' })} />;
   }
 
   // ── Logged-in app shell ─────────────────────────────────────────────────────
@@ -108,6 +113,9 @@ export default function App() {
         )}
         {route.page === 'event-detail' && (
           <EventDetail eventId={route.eventId} navigate={navigate} />
+        )}
+        {route.page === 'ai-assistant' && (
+          <AIAssistant navigate={navigate} />
         )}
       </main>
     </div>
