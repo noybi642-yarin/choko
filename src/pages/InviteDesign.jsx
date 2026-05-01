@@ -15,24 +15,22 @@ function Field({ label, name, value, onChange, placeholder, multiline, hint }) {
     <div className="inv-field">
       <label className="inv-field-label">{label}</label>
       {multiline ? (
-        <textarea
-          className="inv-field-input"
-          name={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          rows={3}
-        />
+        <textarea className="inv-field-input" name={name} value={value} onChange={onChange}
+          placeholder={placeholder} rows={3} />
       ) : (
-        <input
-          className="inv-field-input"
-          name={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-        />
+        <input className="inv-field-input" name={name} value={value} onChange={onChange}
+          placeholder={placeholder} />
       )}
       {hint && <div className="inv-field-hint">{hint}</div>}
+    </div>
+  );
+}
+
+function FieldGroup({ title, children }) {
+  return (
+    <div className="inv-field-group">
+      <div className="inv-field-group-title">{title}</div>
+      {children}
     </div>
   );
 }
@@ -40,45 +38,49 @@ function Field({ label, name, value, onChange, placeholder, multiline, hint }) {
 export default function InviteDesign({ eventId, navigate }) {
   const event = getEvent(eventId);
 
-  const [step, setStep] = useState('pick'); // pick | edit | preview
-  const [templateId, setTemplateId] = useState('classic-ivory');
+  const [step, setStep]         = useState('pick');
+  const [templateId, setTemplateId] = useState('israeli-classic');
   const [data, setData] = useState(() => ({
-    eventType: event ? (EVENT_TYPE_LABEL[event.type] || 'אירוע') : 'אירוע',
-    coupleNames: event?.title || '',
-    subtitle: event?.type === 'wedding'
-      ? 'מזמינים אתכם לחגוג איתנו את שמחת חתונתנו'
+    eventType:       event ? (EVENT_TYPE_LABEL[event.type] || 'אירוע') : 'אירוע',
+    coupleNames:     event?.title || '',
+    subtitle:        event?.type === 'wedding'
+      ? 'בלב מלא אהבה ובהתרגשות רבה,\nאנו מזמינים אתכם לחגוג עמנו את\nטקס חתונתנו'
       : 'מזמינים אתכם לאירוע המיוחד שלנו',
-    date: event ? formatDateHebrew(event.date) : '',
-    time: event?.time || '',
-    venue: event?.venue || '',
-    message: '',
-    dresscode: '',
-    rsvpDate: '',
+    hebrewDate:      '',
+    date:            event ? formatDateHebrew(event.date) : '',
+    receptionTime:   '',
+    ceremonyTime:    event?.time || '',
+    venue:           event?.venue || '',
+    venueAddress:    '',
+    groomsParents:   '',
+    bridesParents:   '',
+    message:         '',
+    dresscode:       '',
+    rsvpDate:        '',
   }));
   const previewRef = useRef();
 
   if (!event) return <div className="page-content"><p>האירוע לא נמצא.</p></div>;
 
-  const handleChange = (e) => {
-    setData(d => ({ ...d, [e.target.name]: e.target.value }));
-  };
+  const handleChange = (e) => setData(d => ({ ...d, [e.target.name]: e.target.value }));
 
   const handlePrint = () => {
     const content = previewRef.current?.innerHTML;
     if (!content) return;
     const w = window.open('', '_blank');
     w.document.write(`
-      <html dir="rtl"><head><meta charset="utf-8">
-      <title>הזמנה</title>
-      <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;800&display=swap" rel="stylesheet">
-      <style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#eee;}
-      @media print{body{background:white;}}</style>
+      <html dir="rtl"><head><meta charset="utf-8"><title>הזמנה</title>
+      <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+      <style>*{box-sizing:border-box;}body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#e8e8e8;padding:20px;}
+      @media print{body{background:white;padding:0;} @page{margin:0;}}</style>
       </head><body>${content}</body></html>
     `);
     w.document.close();
     w.focus();
-    setTimeout(() => { w.print(); }, 600);
+    setTimeout(() => w.print(), 700);
   };
+
+  const isWeddingTemplate = templateId === 'israeli-classic';
 
   return (
     <div className="page-content">
@@ -90,14 +92,12 @@ export default function InviteDesign({ eventId, navigate }) {
         </div>
       </div>
 
-      {/* Step indicator */}
+      {/* Steps */}
       <div className="inv-steps">
         {[['pick','1','בחר תבנית'],['edit','2','ערוך פרטים'],['preview','3','תצוגה מקדימה']].map(([key,num,label]) => (
-          <div
-            key={key}
+          <div key={key}
             className={`inv-step ${step === key ? 'active' : ''} ${
-              (key === 'edit' && (step === 'edit' || step === 'preview')) ||
-              (key === 'preview' && step === 'preview') ? 'done' : ''
+              (key==='edit'&&(step==='edit'||step==='preview'))||(key==='preview'&&step==='preview') ? 'done' : ''
             }`}
             onClick={() => (step !== 'pick' || key === 'pick') && setStep(key)}
           >
@@ -107,61 +107,75 @@ export default function InviteDesign({ eventId, navigate }) {
         ))}
       </div>
 
-      {/* ── Step 1: pick template ───────────────────────────────────────────── */}
+      {/* Step 1 */}
       {step === 'pick' && (
         <div className="inv-section">
           <div className="template-grid">
             {TEMPLATES.map(t => (
-              <TemplateThumbnail
-                key={t.id}
-                template={t}
-                selected={templateId === t.id}
-                onClick={() => setTemplateId(t.id)}
-              />
+              <TemplateThumbnail key={t.id} template={t} selected={templateId === t.id}
+                onClick={() => setTemplateId(t.id)} />
             ))}
           </div>
           <div className="inv-footer">
-            <button className="btn btn-primary" onClick={() => setStep('edit')}>
-              המשך לעריכה ←
-            </button>
+            <button className="btn btn-primary" onClick={() => setStep('edit')}>המשך לעריכה ←</button>
           </div>
         </div>
       )}
 
-      {/* ── Step 2: edit fields ─────────────────────────────────────────────── */}
+      {/* Step 2 */}
       {step === 'edit' && (
         <div className="inv-edit-layout">
           <div className="inv-form-col">
             <div className="inv-form-card">
               <h3 className="inv-form-title">פרטי ההזמנה</h3>
 
-              <Field label="סוג האירוע" name="eventType" value={data.eventType} onChange={handleChange}
-                placeholder="חתונה / יום הולדת / בר מצווה..." />
-              <Field label="שם / שמות" name="coupleNames" value={data.coupleNames} onChange={handleChange}
-                placeholder="נוי & ירין" hint="יוצג בכותרת הראשית" />
-              <Field label="תת כותרת" name="subtitle" value={data.subtitle} onChange={handleChange}
-                placeholder="מזמינים אתכם לחגוג..." multiline />
-              <Field label="תאריך" name="date" value={data.date} onChange={handleChange}
-                placeholder="15 באוגוסט 2026" />
-              <Field label="שעה" name="time" value={data.time} onChange={handleChange}
-                placeholder="19:30" />
-              <Field label="מקום" name="venue" value={data.venue} onChange={handleChange}
-                placeholder="גני התערוכה, תל אביב" />
-              <Field label="הודעה אישית" name="message" value={data.message} onChange={handleChange}
-                placeholder="נשמח לראותכם!" multiline />
-              <Field label="קוד לבוש (אופציונלי)" name="dresscode" value={data.dresscode} onChange={handleChange}
-                placeholder="לבוש יום" />
-              <Field label="אישור הגעה עד (אופציונלי)" name="rsvpDate" value={data.rsvpDate} onChange={handleChange}
-                placeholder="1 באוגוסט 2026" />
+              <FieldGroup title="כללי">
+                <Field label="סוג האירוע" name="eventType" value={data.eventType} onChange={handleChange}
+                  placeholder="חתונה" />
+                <Field label="שמות" name="coupleNames" value={data.coupleNames} onChange={handleChange}
+                  placeholder="ירין & עמורה" hint="יוצג גדול במרכז" />
+                <Field label="טקסט פתיחה" name="subtitle" value={data.subtitle} onChange={handleChange}
+                  placeholder="בלב מלא אהבה..." multiline />
+              </FieldGroup>
+
+              <FieldGroup title="תאריך ומקום">
+                <Field label="תאריך עברי (אופציונלי)" name="hebrewDate" value={data.hebrewDate} onChange={handleChange}
+                  placeholder='יום שני, כ"ג בסיוון תשפ"ו' />
+                <Field label="תאריך לועזי" name="date" value={data.date} onChange={handleChange}
+                  placeholder="08.06.2026" />
+                <Field label="שם המקום" name="venue" value={data.venue} onChange={handleChange}
+                  placeholder="COYA אומנות האירוח" />
+                <Field label="כתובת" name="venueAddress" value={data.venueAddress} onChange={handleChange}
+                  placeholder="הרוקמים 27, חולון" />
+              </FieldGroup>
+
+              <FieldGroup title="לוח זמנים">
+                <Field label="קבלת פנים" name="receptionTime" value={data.receptionTime} onChange={handleChange}
+                  placeholder="19:00" />
+                <Field label="חופה וקידושין" name="ceremonyTime" value={data.ceremonyTime} onChange={handleChange}
+                  placeholder="20:00" />
+              </FieldGroup>
+
+              <FieldGroup title="הורים (אופציונלי)">
+                <Field label="הורי החתן" name="groomsParents" value={data.groomsParents} onChange={handleChange}
+                  placeholder="רינת ורונן שעשוע" />
+                <Field label="הורי הכלה" name="bridesParents" value={data.bridesParents} onChange={handleChange}
+                  placeholder="ילנה פסחיה" />
+              </FieldGroup>
+
+              <FieldGroup title="נוסף">
+                <Field label="קוד לבוש" name="dresscode" value={data.dresscode} onChange={handleChange}
+                  placeholder="לבוש יום" />
+                <Field label="RSVP עד" name="rsvpDate" value={data.rsvpDate} onChange={handleChange}
+                  placeholder="01.06.2026" />
+              </FieldGroup>
             </div>
           </div>
 
           <div className="inv-preview-col">
             <div className="inv-live-label">תצוגה חיה</div>
-            <div className="inv-live-preview">
-              {renderTemplate(templateId, data)}
-            </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+            <div className="inv-live-preview">{renderTemplate(templateId, data)}</div>
+            <div style={{ display:'flex', gap:10, marginTop:16 }}>
               <button className="btn btn-ghost" onClick={() => setStep('pick')}>← שנה תבנית</button>
               <button className="btn btn-primary" onClick={() => setStep('preview')}>לתצוגה מלאה ←</button>
             </div>
@@ -169,20 +183,18 @@ export default function InviteDesign({ eventId, navigate }) {
         </div>
       )}
 
-      {/* ── Step 3: full preview ────────────────────────────────────────────── */}
+      {/* Step 3 */}
       {step === 'preview' && (
         <div className="inv-section">
           <div className="inv-preview-full-wrap">
-            <div ref={previewRef} className="inv-preview-full">
-              {renderTemplate(templateId, data)}
-            </div>
+            <div ref={previewRef} className="inv-preview-full">{renderTemplate(templateId, data)}</div>
           </div>
-          <div className="inv-footer" style={{ gap: 12 }}>
+          <div className="inv-footer" style={{ gap:12 }}>
             <button className="btn btn-ghost" onClick={() => setStep('edit')}>← ערוך שוב</button>
             <button className="btn btn-primary" onClick={handlePrint}>🖨️ הדפסה / שמירה כ-PDF</button>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 8 }}>
-            בדפדפנים מודרניים ניתן לבחור "שמור כ-PDF" בתפריט ההדפסה
+          <p style={{ textAlign:'center', fontSize:13, color:'var(--muted)', marginTop:8 }}>
+            בחרו "שמור כ-PDF" בתפריט ההדפסה לקבלת קובץ מוכן לשליחה
           </p>
         </div>
       )}

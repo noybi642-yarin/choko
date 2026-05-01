@@ -799,6 +799,22 @@
 .inv-form-title { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
 
 .inv-field { display: flex; flex-direction: column; gap: 5px; }
+.inv-field-group {
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--surface);
+}
+.inv-field-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
 .inv-field-label { font-size: 13px; font-weight: 600; color: var(--ink); }
 .inv-field-input {
   border: 1.5px solid var(--border);
