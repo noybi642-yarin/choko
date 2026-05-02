@@ -1,49 +1,52 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
-const SYSTEM_PROMPT = `אתה "חברי הטוב AI" — עוזר אישי לזוגות שמתכננים אירועים (חתונות, בר מצוות, ימי הולדת ועוד).
-אתה ידידותי, חם, ומבין את הלחץ של תכנון אירוע. אתה עוזר בכל הקשור להזמנות:
-- ניסוח טקסט להזמנות (עברית, אנגלית, שתי שפות)
-- בחירת ניסוח מתאים לאופי האירוע (רשמי / קז'ואל / שובב)
-- פרטים חשובים שלא לשכוח בהזמנה (תאריך, שעה, מקום, RSVP עד תאריך, קוד לבוש)
-- עצות על עיצוב ועיתוי שליחת ההזמנות
-- תשובות לשאלות נפוצות על ניהול אורחים
+// Stable session ID for the lifetime of this page mount
+function makeSessionId() {
+  return 'sess_' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+}
 
-ענה תמיד בעברית, בסגנון חברותי ותומך.`;
+const SESSION_ID = makeSessionId();
 
 const STARTERS = [
-  'עזור לי לכתוב טקסט להזמנת חתונה',
-  'מה חשוב לכלול בהזמנה?',
-  'כמה זמן מראש לשלוח הזמנות?',
-  'כתוב לי הזמנה לבר מצווה',
-  'ניסוח קז\'ואל ליום הולדת 30',
+  'איך מוסיפים אורחים מאקסל?',
+  'מה המחיר לחתונה של 300 אנשים?',
+  'איך שולחים תזכורת לאורחים שלא ענו?',
+  'אחרי כמה זמן נמחקים הנתונים שלי?',
+  'האורח לא קיבל את הקישור — מה לעשות?',
+  'איך מארגנים אורחים בקבוצות?',
 ];
 
-function Message({ msg }) {
+function Bubble({ msg }) {
+  const isUser = msg.role === 'user';
   return (
-    <div className={`ai-message ${msg.role}`}>
-      {msg.role === 'assistant' && (
-        <div className="ai-avatar">✨</div>
-      )}
-      <div className="ai-bubble">
-        {msg.content.split('\n').map((line, i) => (
-          <span key={i}>{line}{i < msg.content.split('\n').length - 1 && <br />}</span>
-        ))}
+    <div className={`support-msg ${isUser ? 'support-msg--user' : 'support-msg--ai'}`}>
+      {!isUser && <div className="support-avatar">✨</div>}
+      <div className={`support-bubble ${isUser ? 'support-bubble--user' : 'support-bubble--ai'}`}>
+        {msg.streaming && msg.content === '' ? (
+          <span className="support-typing">
+            <span /><span /><span />
+          </span>
+        ) : (
+          msg.content.split('\n').map((line, i, arr) => (
+            <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+          ))
+        )}
+        {msg.streaming && msg.content !== '' && (
+          <span className="support-cursor" />
+        )}
       </div>
-      {msg.role === 'user' && (
-        <div className="ai-avatar user-avatar">👤</div>
-      )}
+      {isUser && <div className="support-avatar support-avatar--user">👤</div>}
     </div>
   );
 }
 
-function TypingDots() {
+function TicketPrompt({ onOpen, onDismiss }) {
   return (
-    <div className="ai-message assistant">
-      <div className="ai-avatar">✨</div>
-      <div className="ai-bubble typing-bubble">
-        <span className="typing-dot"></span>
-        <span className="typing-dot"></span>
-        <span className="typing-dot"></span>
+    <div className="support-ticket-prompt">
+      <p>רוצה שאפתח פניה לצוות התמיכה?</p>
+      <div className="support-ticket-btns">
+        <button className="btn btn-primary btn-sm" onClick={onOpen}>כן, פתח פניה</button>
+        <button className="btn btn-ghost btn-sm" onClick={onDismiss}>לא תודה</button>
       </div>
     </div>
   );
@@ -52,57 +55,135 @@ function TypingDots() {
 export default function AIAssistant({ navigate }) {
   const [messages, setMessages] = useState([
     {
+      id: 'init',
       role: 'assistant',
-      content: 'שלום! אני חברי הטוב AI 👋\nאני כאן לעזור לך להכין את ההזמנות המושלמות לאירוע שלך.\nעם מה אוכל לעזור לך היום?',
+      content:
+        'שלום! אני חברי הטוב AI 👋\n' +
+        'אני כאן לענות על שאלות לגבי שימוש ב-choko.\n' +
+        'במה אוכל לעזור לך?',
+      streaming: false,
     },
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [input, setInput]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [showTicket, setShowTicket] = useState(false);
+  const [error, setError]       = useState(null);
   const bottomRef = useRef(null);
+  const inputRef  = useRef(null);
+  const abortRef  = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages]);
 
-  const send = async (text) => {
-    const userText = text || input.trim();
-    if (!userText || loading) return;
-    setInput('');
+  const addMessage = (msg) =>
+    setMessages((prev) => [...prev, { id: Date.now() + Math.random(), ...msg }]);
 
-    const newMessages = [...messages, { role: 'user', content: userText }];
-    setMessages(newMessages);
-    setLoading(true);
+  const updateLast = (patch) =>
+    setMessages((prev) => {
+      const copy = [...prev];
+      copy[copy.length - 1] = { ...copy[copy.length - 1], ...patch };
+      return copy;
+    });
 
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': window.__ANTHROPIC_KEY__ || '',
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1024,
-          system: SYSTEM_PROMPT,
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-        }),
-      });
+  const send = useCallback(
+    async (text) => {
+      const userText = (text || input).trim();
+      if (!userText || loading) return;
+      setInput('');
+      setError(null);
+      setShowTicket(false);
 
-      if (!res.ok) throw new Error('API error');
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || 'מצטערת, משהו השתבש. נסי שוב!';
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-    } catch {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'אוי, נראה שיש בעיית חיבור 😅\nוודאי שיש חיבור לאינטרנט ונסי שוב.',
-      }]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Add user turn
+      const userMsg = { role: 'user', content: userText, streaming: false };
+      setMessages((prev) => [...prev, { id: Date.now(), ...userMsg }]);
+
+      // Placeholder AI turn
+      const aiPlaceholder = { role: 'assistant', content: '', streaming: true };
+      setMessages((prev) => [...prev, { id: Date.now() + 1, ...aiPlaceholder }]);
+      setLoading(true);
+
+      // Build history for the request (exclude the placeholder)
+      const history = [
+        ...messages.filter((m) => !m.streaming),
+        userMsg,
+      ].map(({ role, content }) => ({ role, content }));
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({ messages: history, sessionId: SESSION_ID }),
+        });
+
+        if (res.status === 429) {
+          updateLast({
+            content: 'הגעת למגבלת הבקשות. המתן 15 דקות ונסה שוב.',
+            streaming: false,
+          });
+          return;
+        }
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        // Parse SSE stream
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        let fullText = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+
+          const lines = buf.split('\n');
+          buf = lines.pop(); // keep incomplete line
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            let evt;
+            try { evt = JSON.parse(line.slice(6)); } catch { continue; }
+
+            if (evt.type === 'text') {
+              fullText += evt.text;
+              updateLast({ content: fullText, streaming: true });
+            } else if (evt.type === 'done') {
+              updateLast({ streaming: false });
+              // Show ticket prompt if escalation detected
+              const escalated =
+                fullText.includes('לא בטוח') ||
+                fullText.includes('פניה לתמיכה') ||
+                fullText.includes('לא יודע');
+              if (escalated) setShowTicket(true);
+            } else if (evt.type === 'error') {
+              updateLast({ content: evt.message, streaming: false });
+              setError(evt.message);
+            }
+          }
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          updateLast({ content: 'הבקשה בוטלה.', streaming: false });
+        } else {
+          console.error('[support chat]', err);
+          updateLast({
+            content: 'אירעה שגיאת חיבור. בדוק את חיבור האינטרנט ונסה שוב.',
+            streaming: false,
+          });
+        }
+      } finally {
+        setLoading(false);
+        abortRef.current = null;
+        inputRef.current?.focus();
+      }
+    },
+    [input, loading, messages]
+  );
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -111,48 +192,101 @@ export default function AIAssistant({ navigate }) {
     }
   };
 
+  const handleStop = () => {
+    abortRef.current?.abort();
+  };
+
+  const handleOpenTicket = () => {
+    setShowTicket(false);
+    addMessage({
+      role: 'assistant',
+      content:
+        'אשמח לעזור לפתוח פניה לצוות התמיכה. ' +
+        'ספר לי בקצרה מה הבעיה ונעביר אותה הלאה עם כל הפרטים הרלוונטיים.',
+      streaming: false,
+    });
+  };
+
+  const showStarters = messages.length === 1 && !loading;
+
   return (
     <div className="page-content ai-page">
       <div className="page-header">
         <div>
-          <button className="back-btn" onClick={() => navigate({ page: 'dashboard' })}>← חזרה</button>
+          <button className="back-btn" onClick={() => navigate({ page: 'dashboard' })}>
+            ← חזרה
+          </button>
           <h1 className="page-title">✨ חברי הטוב AI</h1>
-          <p className="page-sub">עוזר אישי לתכנון הזמנות האירוע שלך</p>
+          <p className="page-sub">תמיכה חכמה — מבוסס על בסיס ידע רשמי של choko</p>
         </div>
       </div>
 
-      <div className="ai-chat-wrap">
-        <div className="ai-messages">
-          {messages.map((m, i) => <Message key={i} msg={m} />)}
-          {loading && <TypingDots />}
+      <div className="support-chat-wrap">
+        {/* Messages */}
+        <div className="support-messages">
+          {messages.map((m) => (
+            <Bubble key={m.id} msg={m} />
+          ))}
+
+          {/* Escalation prompt */}
+          {showTicket && (
+            <TicketPrompt
+              onOpen={handleOpenTicket}
+              onDismiss={() => setShowTicket(false)}
+            />
+          )}
+
           <div ref={bottomRef} />
         </div>
 
-        {messages.length === 1 && (
-          <div className="ai-starters">
-            {STARTERS.map((s, i) => (
-              <button key={i} className="ai-starter-btn" onClick={() => send(s)}>
+        {/* Starter chips */}
+        {showStarters && (
+          <div className="support-starters">
+            {STARTERS.map((s) => (
+              <button key={s} className="support-starter" onClick={() => send(s)}>
                 {s}
               </button>
             ))}
           </div>
         )}
 
-        <form className="ai-input-row" onSubmit={e => { e.preventDefault(); send(); }}>
+        {/* Error banner */}
+        {error && (
+          <div className="support-error">⚠️ {error}</div>
+        )}
+
+        {/* Input row */}
+        <form
+          className="support-input-row"
+          onSubmit={(e) => { e.preventDefault(); send(); }}
+        >
           <textarea
-            className="ai-input"
+            ref={inputRef}
+            className="support-input"
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="שאל/י אותי הכל על ההזמנות שלך..."
+            placeholder="שאל/י שאלה על שימוש ב-choko..."
             rows={1}
             disabled={loading}
           />
-          <button type="submit" className="ai-send-btn" disabled={loading || !input.trim()}>
-            {loading ? <span className="spinner"></span> : '↑'}
-          </button>
+          {loading ? (
+            <button type="button" className="support-send-btn stop" onClick={handleStop}>
+              ■
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="support-send-btn"
+              disabled={!input.trim()}
+            >
+              ↑
+            </button>
+          )}
         </form>
-        <p className="ai-hint">Enter לשליחה · Shift+Enter לשורה חדשה</p>
+        <p className="support-hint">
+          Enter לשליחה · Shift+Enter לשורה חדשה · מבוסס על בסיס ידע רשמי בלבד
+        </p>
       </div>
     </div>
   );

@@ -123,6 +123,71 @@ export function Features() {
   );
 }
 
+export function AppBanner() {
+  return (
+    <section className="block app-banner-block">
+      <div className="container">
+        <div className="app-banner-inner">
+          <div className="app-banner-text">
+            <div className="section-eyebrow">בקרוב</div>
+            <h2 className="section-title" style={{ fontSize: '2rem', marginBottom: 12 }}>
+              choko גם <em>באפליקציה</em>
+            </h2>
+            <p className="section-sub" style={{ marginBottom: 24 }}>
+              כל הניהול, האישורים והתקשורת עם האורחים — ישירות מהנייד שלכם.
+              אפליקציה ייעודית ל-iOS ו-Android בפיתוח.
+            </p>
+            <div className="app-banner-badges">
+              <div className="app-badge">
+                <span className="app-badge-icon">🍎</span>
+                <div>
+                  <div className="app-badge-label">בקרוב על</div>
+                  <div className="app-badge-store">App Store</div>
+                </div>
+              </div>
+              <div className="app-badge">
+                <span className="app-badge-icon">▶</span>
+                <div>
+                  <div className="app-badge-label">בקרוב על</div>
+                  <div className="app-badge-store">Google Play</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="app-banner-visual">
+            <div className="app-phone-mockup">
+              <div className="app-phone-screen">
+                <div className="app-phone-bar" />
+                <div className="app-phone-notif">
+                  <span>🎉</span>
+                  <div>
+                    <div className="app-phone-notif-title">דנה אישרה הגעה</div>
+                    <div className="app-phone-notif-sub">+2 אנשים · עכשיו</div>
+                  </div>
+                </div>
+                <div className="app-phone-stat-row">
+                  <div className="app-phone-stat"><span className="app-phone-stat-n">186</span><span>אישרו</span></div>
+                  <div className="app-phone-stat"><span className="app-phone-stat-n">42</span><span>בדרך</span></div>
+                  <div className="app-phone-stat"><span className="app-phone-stat-n">24</span><span>ממתינים</span></div>
+                </div>
+                <div className="app-phone-list">
+                  {['אורית כהן · 2 אנשים', 'משה לוי · 4 אנשים', 'שירה גל · 1 אדם'].map((g, i) => (
+                    <div key={i} className="app-phone-list-row">
+                      <div className="app-phone-av">{g[0]}</div>
+                      <span>{g}</span>
+                      <span className="app-phone-check">✓</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Pricing({ onCta }) {
   const tiers = [
     {
