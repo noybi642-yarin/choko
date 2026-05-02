@@ -158,9 +158,9 @@ export default function InviteDesign({ eventId, navigate }) {
 
               <FieldGroup title="הורים (אופציונלי)">
                 <Field label="הורי החתן" name="groomsParents" value={data.groomsParents} onChange={handleChange}
-                  placeholder="רינת ורונן שעשוע" />
+                  placeholder="שלום ישראלי וישראלה שלום" />
                 <Field label="הורי הכלה" name="bridesParents" value={data.bridesParents} onChange={handleChange}
-                  placeholder="ילנה פסחיה" />
+                  placeholder="ויוסי ושמרית" />
               </FieldGroup>
 
               <FieldGroup title="נוסף">
