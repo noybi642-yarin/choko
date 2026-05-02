@@ -103,11 +103,12 @@ export default function AIAssistant({ navigate }) {
       setMessages((prev) => [...prev, { id: Date.now() + 1, ...aiPlaceholder }]);
       setLoading(true);
 
-      // Build history for the request (exclude the placeholder)
-      const history = [
-        ...messages.filter((m) => !m.streaming),
-        userMsg,
-      ].map(({ role, content }) => ({ role, content }));
+      // Build history — must start with a user message (API requirement)
+      const allMsgs = [...messages.filter((m) => !m.streaming), userMsg];
+      const firstUserIdx = allMsgs.findIndex((m) => m.role === 'user');
+      const history = allMsgs
+        .slice(firstUserIdx >= 0 ? firstUserIdx : 0)
+        .map(({ role, content }) => ({ role, content }));
 
       const controller = new AbortController();
       abortRef.current = controller;
