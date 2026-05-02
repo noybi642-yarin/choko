@@ -1,5 +1,5 @@
 import PhoneRSVP from './PhoneRSVP';
-import { Steps, Features, Pricing, FooterCTA } from './Sections';
+import { Steps, Features, AppBanner, Pricing, FooterCTA } from './Sections';
 
 function Nav({ onLogin }) {
   return (
@@ -77,6 +77,7 @@ export default function Landing({ onLogin, onAI }) {
 
       <Steps />
       <Features />
+      <AppBanner />
       <Pricing onCta={onLogin} />
       <FooterCTA onCta={onLogin} />
     </>
