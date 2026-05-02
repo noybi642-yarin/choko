@@ -62,20 +62,40 @@ function WeddingRomantic({ data }) {
       </div>
       <div style={{ position:'absolute', inset:50, border:'1px solid #C9A961', borderRadius:2, pointerEvents:'none' }} />
       <div style={{ position:'absolute', inset:56, border:'0.5px solid #C9A961', opacity:0.5, pointerEvents:'none' }} />
-      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'90px 70px', textAlign:'center' }}>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:13, letterSpacing:'0.3em', color:'#8B3A47', textTransform:'uppercase', marginBottom:18 }}>Together with their families</div>
-        <div style={{ width:60, height:1, background:'#C9A961', margin:'0 auto 28px' }} />
-        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:50, fontWeight:300, lineHeight:1.05, color:'#3D2B2E', marginBottom:4 }}>{nameA}</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:28, color:'#8B3A47', margin:'2px 0' }}>&amp;</div>
-        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:50, fontWeight:300, lineHeight:1.05, color:'#3D2B2E', marginBottom:28 }}>{nameB}</div>
-        <div style={{ width:60, height:1, background:'#C9A961', margin:'0 auto 24px' }} />
-        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:13, letterSpacing:'0.15em', color:'#5A4548', lineHeight:1.8 }}>מתחתנים!<br />ושמחים להזמינכם לחגוג עמם</div>
-        <div style={{ marginTop:24, display:'flex', alignItems:'center', gap:14 }}>
+      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'75px 60px', textAlign:'center' }}>
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:11, letterSpacing:'0.15em', color:'#5A4548', lineHeight:1.7, marginBottom:14, whiteSpace:'pre-line' }}>
+          {data.subtitle || 'בלב מלא אהבה ובהתרגשות רבה,\nמזמינים אתכם לחגוג עמנו'}
+        </div>
+        <div style={{ width:60, height:1, background:'#C9A961', margin:'0 auto 16px' }} />
+        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:46, fontWeight:300, lineHeight:1.05, color:'#3D2B2E', marginBottom:4 }}>{nameA}</div>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:26, color:'#8B3A47', margin:'2px 0' }}>&amp;</div>
+        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:46, fontWeight:300, lineHeight:1.05, color:'#3D2B2E', marginBottom:16 }}>{nameB}</div>
+        <div style={{ width:60, height:1, background:'#C9A961', margin:'0 auto 14px' }} />
+        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
           <div style={{ width:30, height:1, background:'#C9A961' }} />
-          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:20, color:'#8B3A47', letterSpacing:'0.1em' }}>{data.date}</div>
+          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:16, color:'#8B3A47', letterSpacing:'0.1em', textAlign:'center', lineHeight:1.5 }}>
+            {data.hebrewDate && <>{data.hebrewDate}<br /></>}{data.date}
+          </div>
           <div style={{ width:30, height:1, background:'#C9A961' }} />
         </div>
-        <div style={{ marginTop:12, fontFamily:'"Heebo",sans-serif', fontSize:11, letterSpacing:'0.25em', color:'#7A6064', textTransform:'uppercase' }}>{data.venue}{data.ceremonyTime ? ` · ${data.ceremonyTime}` : ''}</div>
+        {(data.receptionTime || data.ceremonyTime) && (
+          <div style={{ marginTop:6, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.2em', color:'#5A4548' }}>
+            {[data.receptionTime && `קבלת פנים ${data.receptionTime}`, data.ceremonyTime && `חופה ${data.ceremonyTime}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
+        <div style={{ marginTop:7, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.2em', color:'#7A6064', lineHeight:1.7, textTransform:'uppercase' }}>
+          {data.venue}{data.venueAddress ? <><br />{data.venueAddress}</> : ''}
+        </div>
+        {(data.groomsParents || data.bridesParents) && (
+          <div style={{ marginTop:10, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.1em', color:'#5A4548', lineHeight:1.9 }}>
+            {data.groomsParents && <>{data.groomsParents}<br /></>}{data.bridesParents}
+          </div>
+        )}
+        {(data.dresscode || data.rsvpDate) && (
+          <div style={{ marginTop:8, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:11, color:'#8B3A47', letterSpacing:'0.2em' }}>
+            {[data.dresscode && `— ${data.dresscode} —`, data.rsvpDate && `RSVP ${data.rsvpDate}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -119,19 +139,39 @@ function WeddingVintage({ data }) {
         <div style={{ position:'absolute', bottom:20, right:110 }}><VintageRose size={55} palette="peach" /></div>
       </div>
       <div style={{ position:'absolute', inset:60, border:'0.5px solid #7A1F2E', opacity:0.5, pointerEvents:'none' }} />
-      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'110px 80px', textAlign:'center' }}>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:18, color:'#7A1F2E', marginBottom:4 }}>With joy in our hearts</div>
-        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.4em', color:'#A8364A', textTransform:'uppercase', marginBottom:24 }}>We invite you</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:88, fontWeight:400, lineHeight:0.9, color:'#7A1F2E', letterSpacing:'-0.02em' }}>{nameA}</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:34, color:'#A8364A', margin:'-2px 0' }}>&amp;</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:88, fontWeight:400, lineHeight:0.9, color:'#7A1F2E', letterSpacing:'-0.02em' }}>{nameB}</div>
-        <div style={{ display:'flex', alignItems:'center', gap:12, margin:'20px auto 14px' }}>
+      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'100px 70px', textAlign:'center' }}>
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:11, letterSpacing:'0.15em', color:'#5A2030', lineHeight:1.7, marginBottom:16, whiteSpace:'pre-line' }}>
+          {data.subtitle || 'בלב מלא אהבה ובהתרגשות רבה,\nמזמינים אתכם לחגוג עמנו'}
+        </div>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:80, fontWeight:400, lineHeight:0.9, color:'#7A1F2E', letterSpacing:'-0.02em' }}>{nameA}</div>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:32, color:'#A8364A', margin:'-2px 0' }}>&amp;</div>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:80, fontWeight:400, lineHeight:0.9, color:'#7A1F2E', letterSpacing:'-0.02em' }}>{nameB}</div>
+        <div style={{ display:'flex', alignItems:'center', gap:12, margin:'16px auto 10px' }}>
           <div style={{ width:50, height:0.5, background:'#7A1F2E' }} />
           <svg width="20" height="14" viewBox="0 0 20 14"><path d="M 10 14 L 4 7 Q 4 0 10 4 Q 16 0 16 7 Z" fill="#7A1F2E" /></svg>
           <div style={{ width:50, height:0.5, background:'#7A1F2E' }} />
         </div>
-        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:16, color:'#3D2B2E', letterSpacing:'0.1em', lineHeight:1.8 }}>{data.hebrewDate || data.date}</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:17, color:'#7A1F2E', marginTop:4 }}>{data.venue}{data.venueAddress ? ` · ${data.venueAddress}` : ''}</div>
+        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:14, color:'#3D2B2E', letterSpacing:'0.1em', lineHeight:1.7 }}>
+          {data.hebrewDate && <>{data.hebrewDate}<br /></>}{data.date}
+        </div>
+        {(data.receptionTime || data.ceremonyTime) && (
+          <div style={{ marginTop:4, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.2em', color:'#7A1F2E' }}>
+            {[data.receptionTime && `קבלת פנים ${data.receptionTime}`, data.ceremonyTime && `חופה ${data.ceremonyTime}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
+        <div style={{ marginTop:6, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:15, color:'#7A1F2E', lineHeight:1.6 }}>
+          {data.venue}{data.venueAddress ? <><br />{data.venueAddress}</> : ''}
+        </div>
+        {(data.groomsParents || data.bridesParents) && (
+          <div style={{ marginTop:10, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.1em', color:'#5A2030', lineHeight:1.9 }}>
+            {data.groomsParents && <>{data.groomsParents}<br /></>}{data.bridesParents}
+          </div>
+        )}
+        {(data.dresscode || data.rsvpDate) && (
+          <div style={{ marginTop:8, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:11, color:'#A8364A', letterSpacing:'0.2em' }}>
+            {[data.dresscode && `— ${data.dresscode} —`, data.rsvpDate && `RSVP ${data.rsvpDate}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -164,15 +204,33 @@ function WeddingMinimal({ data }) {
       <div style={{ position:'absolute', right:44, top:'50%', transform:'translateY(-50%) rotate(90deg)', transformOrigin:'right center', fontFamily:'"Heebo",sans-serif', fontSize:9, letterSpacing:'0.5em', color:'#1A1A1A', textTransform:'uppercase', whiteSpace:'nowrap' }}>
         {data.venue}{data.ceremonyTime ? ` · ${data.ceremonyTime}` : ''}
       </div>
-      <div style={{ position:'absolute', bottom:64, left:80, right:80, textAlign:'center' }}>
-        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:9, letterSpacing:'0.6em', textTransform:'uppercase', color:'#1A1A1A', marginBottom:20 }}>The wedding of</div>
-        <div style={{ display:'flex', alignItems:'baseline', justifyContent:'center', gap:16 }}>
-          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:50, fontStyle:'italic', fontWeight:400, color:'#1A1A1A', lineHeight:1 }}>{nameA}</div>
-          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:26, fontStyle:'italic', color:'#B85542' }}>&amp;</div>
-          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:50, fontStyle:'italic', fontWeight:400, color:'#1A1A1A', lineHeight:1 }}>{nameB}</div>
+      <div style={{ position:'absolute', bottom:44, left:70, right:70, textAlign:'center' }}>
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:9, letterSpacing:'0.5em', textTransform:'uppercase', color:'#1A1A1A', marginBottom:10, whiteSpace:'pre-line' }}>
+          {data.subtitle || 'The wedding of'}
         </div>
-        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:16, color:'#1A1A1A', marginTop:10, letterSpacing:'0.15em' }}>{data.coupleNames}</div>
-        <div style={{ margin:'24px auto 0', width:1, height:24, background:'#1A1A1A' }} />
+        <div style={{ display:'flex', alignItems:'baseline', justifyContent:'center', gap:12 }}>
+          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:44, fontStyle:'italic', fontWeight:400, color:'#1A1A1A', lineHeight:1 }}>{nameA}</div>
+          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:22, fontStyle:'italic', color:'#B85542' }}>&amp;</div>
+          <div style={{ fontFamily:'"Cormorant Garamond",serif', fontSize:44, fontStyle:'italic', fontWeight:400, color:'#1A1A1A', lineHeight:1 }}>{nameB}</div>
+        </div>
+        <div style={{ margin:'10px auto 0', width:1, height:18, background:'#1A1A1A' }} />
+        <div style={{ marginTop:10, fontFamily:'"Heebo",sans-serif', fontSize:9, letterSpacing:'0.3em', color:'#1A1A1A', lineHeight:1.7 }}>
+          {data.hebrewDate && <>{data.hebrewDate}<br /></>}{data.date}
+          {(data.receptionTime || data.ceremonyTime) && (
+            <><br />{[data.receptionTime && `קבלת פנים ${data.receptionTime}`, data.ceremonyTime && `חופה ${data.ceremonyTime}`].filter(Boolean).join(' · ')}</>
+          )}
+          <br />{data.venue}{data.venueAddress ? ` · ${data.venueAddress}` : ''}
+        </div>
+        {(data.groomsParents || data.bridesParents) && (
+          <div style={{ marginTop:8, fontFamily:'"Heebo",sans-serif', fontSize:9, letterSpacing:'0.1em', color:'#1A1A1A', lineHeight:1.8 }}>
+            {data.groomsParents && <>{data.groomsParents}<br /></>}{data.bridesParents}
+          </div>
+        )}
+        {(data.dresscode || data.rsvpDate) && (
+          <div style={{ marginTop:6, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:10, color:'#B85542', letterSpacing:'0.2em' }}>
+            {[data.dresscode && `— ${data.dresscode} —`, data.rsvpDate && `RSVP ${data.rsvpDate}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -206,23 +264,39 @@ function WeddingGarden({ data }) {
       <div style={{ position:'absolute', bottom:-50, right:-40, transform:'scaleY(-1) scaleX(-1)' }}><LeafBranch size={220} rotate={-10} /></div>
       <div style={{ position:'absolute', bottom:40, left:120 }}><Wildflower size={50} color="#F5E6C8" center="#C46B4A" /></div>
       <div style={{ position:'absolute', bottom:80, right:110 }}><Wildflower size={42} color="#FFFFFF" center="#3A2A1A" /></div>
-      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:280, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', color:'#F5E6C8' }}>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:13, letterSpacing:'0.3em', color:'#C9A961', textTransform:'uppercase', marginBottom:18 }}>A Garden Wedding</div>
-        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
+      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:300, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', color:'#F5E6C8' }}>
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.2em', color:'#C9A961', lineHeight:1.7, marginBottom:14, whiteSpace:'pre-line' }}>
+          {data.subtitle || 'בלב מלא אהבה ובהתרגשות רבה,\nמזמינים אתכם לחגוג עמנו'}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
           <div style={{ width:28, height:0.5, background:'#C9A961' }} />
           <div style={{ width:6, height:6, background:'#C46B4A', borderRadius:'50%' }} />
           <div style={{ width:28, height:0.5, background:'#C9A961' }} />
         </div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:76, fontWeight:400, lineHeight:0.95, color:'#F5E6C8' }}>{nameA}</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:26, color:'#C9A961', margin:'-2px 0' }}>and</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:76, fontWeight:400, lineHeight:0.95, color:'#F5E6C8' }}>{nameB}</div>
-        <div style={{ display:'flex', alignItems:'center', gap:12, margin:'20px 0 12px' }}>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:68, fontWeight:400, lineHeight:0.95, color:'#F5E6C8' }}>{nameA}</div>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:24, color:'#C9A961', margin:'-2px 0' }}>and</div>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:68, fontWeight:400, lineHeight:0.95, color:'#F5E6C8' }}>{nameB}</div>
+        <div style={{ display:'flex', alignItems:'center', gap:12, margin:'14px 0 10px' }}>
           <div style={{ width:28, height:0.5, background:'#C9A961' }} />
           <div style={{ width:28, height:0.5, background:'#C9A961' }} />
         </div>
-        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:11, letterSpacing:'0.3em', color:'#F5E6C8', textTransform:'uppercase', lineHeight:2 }}>
-          {data.date}<br /><span style={{ color:'#C9A961' }}>{data.venue}{data.ceremonyTime ? ` · ${data.ceremonyTime}` : ''}</span>
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.25em', color:'#F5E6C8', lineHeight:1.9 }}>
+          {data.hebrewDate && <>{data.hebrewDate}<br /></>}{data.date}
+          {(data.receptionTime || data.ceremonyTime) && (
+            <><br />{[data.receptionTime && `קבלת פנים ${data.receptionTime}`, data.ceremonyTime && `חופה ${data.ceremonyTime}`].filter(Boolean).join(' · ')}</>
+          )}
+          <br /><span style={{ color:'#C9A961' }}>{data.venue}{data.venueAddress ? ` · ${data.venueAddress}` : ''}</span>
         </div>
+        {(data.groomsParents || data.bridesParents) && (
+          <div style={{ marginTop:10, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.1em', color:'#C9A961', lineHeight:1.9 }}>
+            {data.groomsParents && <>{data.groomsParents}<br /></>}{data.bridesParents}
+          </div>
+        )}
+        {(data.dresscode || data.rsvpDate) && (
+          <div style={{ marginTop:8, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:11, color:'#C9A961', letterSpacing:'0.2em' }}>
+            {[data.dresscode && `— ${data.dresscode} —`, data.rsvpDate && `RSVP ${data.rsvpDate}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -267,18 +341,32 @@ function WeddingArtDeco({ data }) {
       <div style={{ position:'absolute', top:50, left:'50%', transform:'translateX(-50%) scaleY(-1)' }}><DecoFan size={90} /></div>
       <div style={{ position:'absolute', bottom:50, left:'50%', transform:'translateX(-50%)' }}><DecoFan size={90} /></div>
       <div style={{ position:'absolute', top:210, left:'50%', transform:'translateX(-50%)' }}><Sunburst size={260} /></div>
-      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'0 80px' }}>
-        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.6em', color:'#C9A961', textTransform:'uppercase', marginBottom:44 }}>★ The Wedding Of ★</div>
-        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:100, fontWeight:400, color:'#C9A961', lineHeight:1, letterSpacing:'-0.05em', textShadow:'0 0 30px rgba(201,169,97,0.3)' }}>
-          {initA} <span style={{ fontSize:76, color:'#F5E6C8' }}>&amp;</span> {initB}
+      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'0 70px' }}>
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.5em', color:'#C9A961', textTransform:'uppercase', marginBottom:24, whiteSpace:'pre-line', lineHeight:1.7 }}>
+          {data.subtitle || '★ The Wedding Of ★'}
         </div>
-        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:28, fontWeight:400, color:'#F5E6C8', letterSpacing:'0.15em', marginTop:16, marginBottom:4 }}>{data.coupleNames}</div>
-        <div style={{ margin:'28px auto 14px', width:100, height:1, background:'#C9A961' }} />
-        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:11, letterSpacing:'0.4em', color:'#F5E6C8', textTransform:'uppercase', lineHeight:2.2 }}>
-          {data.hebrewDate || data.date}<br />
-          <span style={{ color:'#C9A961' }}>{data.venue}{data.ceremonyTime ? ` · ${data.ceremonyTime}` : ''}</span>
+        <div style={{ fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:90, fontWeight:400, color:'#C9A961', lineHeight:1, letterSpacing:'-0.05em', textShadow:'0 0 30px rgba(201,169,97,0.3)' }}>
+          {initA} <span style={{ fontSize:68, color:'#F5E6C8' }}>&amp;</span> {initB}
         </div>
-        {data.dresscode && <div style={{ marginTop:12, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:12, color:'#8B7340', letterSpacing:'0.3em' }}>— {data.dresscode} —</div>}
+        <div style={{ fontFamily:'"Frank Ruhl Libre",serif', fontSize:24, fontWeight:400, color:'#F5E6C8', letterSpacing:'0.15em', marginTop:12, marginBottom:4 }}>{data.coupleNames}</div>
+        <div style={{ margin:'18px auto 12px', width:100, height:1, background:'#C9A961' }} />
+        <div style={{ fontFamily:'"Heebo",sans-serif', fontSize:11, letterSpacing:'0.35em', color:'#F5E6C8', lineHeight:2 }}>
+          {data.hebrewDate && <>{data.hebrewDate}<br /></>}{data.date}
+          {(data.receptionTime || data.ceremonyTime) && (
+            <><br />{[data.receptionTime && `קבלת פנים ${data.receptionTime}`, data.ceremonyTime && `חופה ${data.ceremonyTime}`].filter(Boolean).join(' · ')}</>
+          )}
+          <br /><span style={{ color:'#C9A961' }}>{data.venue}{data.venueAddress ? ` · ${data.venueAddress}` : ''}</span>
+        </div>
+        {(data.groomsParents || data.bridesParents) && (
+          <div style={{ marginTop:12, fontFamily:'"Heebo",sans-serif', fontSize:10, letterSpacing:'0.15em', color:'#C9A961', lineHeight:1.9 }}>
+            {data.groomsParents && <>{data.groomsParents}<br /></>}{data.bridesParents}
+          </div>
+        )}
+        {(data.dresscode || data.rsvpDate) && (
+          <div style={{ marginTop:10, fontFamily:'"Cormorant Garamond",serif', fontStyle:'italic', fontSize:11, color:'#8B7340', letterSpacing:'0.3em' }}>
+            {[data.dresscode && `— ${data.dresscode} —`, data.rsvpDate && `RSVP ${data.rsvpDate}`].filter(Boolean).join(' · ')}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -607,7 +695,7 @@ export function TemplateThumbnail({ template, selected, onClick }) {
     hebrewDate: 'כ"ג בסיוון תשפ"ו', date: '08.06.2026',
     receptionTime: '19:00', ceremonyTime: '20:00',
     venue: 'COYA אומנות האירוח', venueAddress: 'הרוקמים 27, חולון',
-    groomsParents: 'רינת ורונן', bridesParents: 'ילנה פסחיה',
+    groomsParents: 'שלום ישראלי וישראלה שלום', bridesParents: 'ויוסי ושמרית',
     message: '', dresscode: 'לבוש יום', rsvpDate: '',
   };
   const scale = 0.38;
