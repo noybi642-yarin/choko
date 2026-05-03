@@ -10,6 +10,8 @@ import EventDetail from './pages/EventDetail';
 import GuestRSVP from './pages/GuestRSVP';
 import AIAssistant from './pages/AIAssistant';
 import InviteDesign from './pages/InviteDesign';
+import WhatsAppScheduler from './pages/WhatsAppScheduler';
+import GuestCalculator from './pages/GuestCalculator';
 
 initStore();
 
@@ -84,6 +86,14 @@ export default function App() {
     setRoute(route.then ? { page: route.then } : { page: 'dashboard' });
   };
 
+  // ── Public calculator (no auth required) ───────────────────────────────────
+  if (route.page === 'guest-calculator') {
+    return <GuestCalculator
+      navigate={navigate}
+      onLogin={() => setRoute({ page: 'login' })}
+    />;
+  }
+
   // ── Public RSVP page (no auth) ──────────────────────────────────────────────
   if (route.page === 'rsvp') {
     return <GuestRSVP
@@ -98,7 +108,7 @@ export default function App() {
     if (route.page === 'login') {
       return <Login onSuccess={handleLogin} onBack={() => setRoute({ page: 'landing' })} />;
     }
-    return <Landing onLogin={() => setRoute({ page: 'login' })} onAI={() => setRoute({ page: 'login', then: 'ai-assistant' })} />;
+    return <Landing onLogin={() => setRoute({ page: 'login' })} onAI={() => setRoute({ page: 'login', then: 'ai-assistant' })} navigate={navigate} />;
   }
 
   // ── Logged-in app shell ─────────────────────────────────────────────────────
@@ -120,6 +130,9 @@ export default function App() {
         )}
         {route.page === 'invite-design' && (
           <InviteDesign eventId={route.eventId} navigate={navigate} />
+        )}
+        {route.page === 'whatsapp-scheduler' && (
+          <WhatsAppScheduler eventId={route.eventId} navigate={navigate} />
         )}
       </main>
     </div>

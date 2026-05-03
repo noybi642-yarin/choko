@@ -24,6 +24,7 @@ function Nav({ onLogin }) {
           <a href="#how">איך זה עובד</a>
           <a href="#features">תכונות</a>
           <a href="#pricing">תמחור</a>
+          <button style={{ background:'none', border:'none', cursor:'pointer', color:'inherit', fontSize:'inherit', fontWeight:'inherit', padding:0 }} onClick={() => navigate?.({ page: 'guest-calculator' })}>מחשבון מוזמנים</button>
         </div>
         <div className="lp-nav-end">
           <button className="lp-nav-btn lp-nav-btn--ghost" onClick={onLogin}>כניסה</button>
@@ -34,7 +35,7 @@ function Nav({ onLogin }) {
   );
 }
 
-export default function Landing({ onLogin, onAI }) {
+export default function Landing({ onLogin, onAI, navigate }) {
   const copyRef = useRef(null);
   const stageRef = useRef(null);
 
