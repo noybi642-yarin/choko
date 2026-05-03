@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import PhoneRSVP from './PhoneRSVP';
 import { Steps, Features, AppBanner, Pricing, FooterCTA } from './Sections';
+import { RainbowBorderButton } from './components/ui/RainbowBorderButton';
 
 function Nav({ onLogin }) {
   const navRef = useRef(null);
@@ -26,7 +27,7 @@ function Nav({ onLogin }) {
         </div>
         <div className="lp-nav-end">
           <button className="lp-nav-btn lp-nav-btn--ghost" onClick={onLogin}>כניסה</button>
-          <button className="lp-nav-btn lp-nav-btn--fill" onClick={onLogin}>יצירת אירוע</button>
+          <RainbowBorderButton onClick={onLogin}>יצירת אירוע</RainbowBorderButton>
         </div>
       </div>
     </nav>
@@ -78,9 +79,9 @@ export default function Landing({ onLogin, onAI }) {
             </p>
 
             <div className="lp-ctas">
-              <button className="lp-btn-coral" onClick={onLogin}>
+              <RainbowBorderButton onClick={onLogin} className="lp-btn-coral-size">
                 יצירת הזמנה — חינם
-              </button>
+              </RainbowBorderButton>
               <button className="lp-btn-outline" onClick={onAI}>
                 ✨ חברי הטוב AI
               </button>

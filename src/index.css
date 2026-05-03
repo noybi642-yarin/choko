@@ -96,6 +96,52 @@ a { color: inherit; text-decoration: none; }
 }
 .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
 
+/* ===== Rainbow Border Button ===== */
+.rainbow-btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 20px;
+  background: oklch(0.09 0.014 45);
+  border-radius: 12px;
+  border: none;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  z-index: 0;
+}
+.rainbow-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+.rainbow-btn.lp-btn-coral-size { padding: 14px 28px; font-size: 16px; border-radius: 14px; }
+.rainbow-btn.lp-btn-coral-size::before, .rainbow-btn.lp-btn-coral-size::after { border-radius: 16px; }
+
+.rainbow-btn::before,
+.rainbow-btn::after {
+  content: '';
+  position: absolute;
+  left: -2px; top: -2px;
+  border-radius: 14px;
+  background: linear-gradient(45deg,
+    #fb0094, #0000ff, #00ff00, #ffff00,
+    #ff0000, #fb0094, #0000ff, #00ff00,
+    #ffff00, #ff0000
+  );
+  background-size: 400%;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  z-index: -1;
+  animation: rainbow-spin 20s linear infinite;
+}
+.rainbow-btn::after {
+  filter: blur(50px);
+}
+@keyframes rainbow-spin {
+  0%   { background-position: 0 0; }
+  50%  { background-position: 400% 0; }
+  100% { background-position: 0 0; }
+}
+
 /* ===== Landing Nav ===== */
 .lp-nav {
   position: fixed;
