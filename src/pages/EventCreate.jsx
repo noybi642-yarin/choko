@@ -8,19 +8,42 @@ const TYPES = [
   { value: 'other',    label: 'אחר',             emoji: '🎉' },
 ];
 
+function Field({ label, children, hint }) {
+  return (
+    <div className="field">
+      <label>{label}</label>
+      {children}
+      {hint && <div style={{ fontSize: 12, color: 'var(--ink-mute)', marginTop: 4 }}>{hint}</div>}
+    </div>
+  );
+}
+
 export default function EventCreate({ user, navigate }) {
-  const [type, setType]   = useState('wedding');
+  const [type, setType] = useState('wedding');
   const [title, setTitle] = useState('');
-  const [date, setDate]   = useState('');
-  const [time, setTime]   = useState('19:30');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('19:30');
   const [venue, setVenue] = useState('');
+
+  // Extended fields
+  const [venueAddress, setVenueAddress] = useState('');
+  const [receptionTime, setReceptionTime] = useState('');
+  const [groomsParents, setGroomsParents] = useState('');
+  const [bridesParents, setBridesParents] = useState('');
+  const [honoree, setHonoree] = useState(''); // birthday / bar name
+
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
     setTimeout(() => {
-      const ev = createEvent({ type, title, date, time, venue }, user.email);
+      const ev = createEvent({
+        type, title, date, time, venue,
+        venueAddress, receptionTime,
+        groomsParents, bridesParents,
+        honoree,
+      }, user.email);
       navigate({ page: 'event-detail', eventId: ev.id });
     }, 400);
   };
@@ -37,6 +60,7 @@ export default function EventCreate({ user, navigate }) {
       <div className="form-card">
         <form onSubmit={handleSubmit}>
 
+          {/* Type picker */}
           <div className="field-group">
             <label className="field-label">סוג האירוע</label>
             <div className="type-grid">
@@ -54,8 +78,8 @@ export default function EventCreate({ user, navigate }) {
             </div>
           </div>
 
-          <div className="field">
-            <label>שם האירוע</label>
+          {/* Event name */}
+          <Field label="שם האירוע">
             <input
               type="text"
               value={title}
@@ -63,31 +87,70 @@ export default function EventCreate({ user, navigate }) {
               placeholder={type === 'wedding' ? 'לדוגמה: חתונת נוי & ירין' : 'שם האירוע'}
               required
             />
-          </div>
+          </Field>
 
+          {/* Wedding-specific: couple / parents */}
+          {type === 'wedding' && (
+            <>
+              <div className="fields-row">
+                <Field label="הורי החתן" hint="יופיע על ההזמנה">
+                  <input
+                    type="text"
+                    value={groomsParents}
+                    onChange={e => setGroomsParents(e.target.value)}
+                    placeholder="שלום ישראלי וישראלה שלום"
+                  />
+                </Field>
+                <Field label="הורי הכלה" hint="יופיע על ההזמנה">
+                  <input
+                    type="text"
+                    value={bridesParents}
+                    onChange={e => setBridesParents(e.target.value)}
+                    placeholder="יוסי ושמרית כהן"
+                  />
+                </Field>
+              </div>
+            </>
+          )}
+
+          {/* Birthday / bar honoree */}
+          {(type === 'birthday' || type === 'bar') && (
+            <Field
+              label={type === 'bar' ? 'שם בר/בת המצווה' : 'שם יום ההולדת'}
+              hint="יופיע על ההזמנה"
+            >
+              <input
+                type="text"
+                value={honoree}
+                onChange={e => setHonoree(e.target.value)}
+                placeholder={type === 'bar' ? 'יוסי ישראלי' : 'מיכל כהן'}
+              />
+            </Field>
+          )}
+
+          {/* Date & time */}
           <div className="fields-row">
-            <div className="field">
-              <label>תאריך</label>
-              <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                required
-              />
-            </div>
-            <div className="field">
-              <label>שעה</label>
-              <input
-                type="time"
-                value={time}
-                onChange={e => setTime(e.target.value)}
-                required
-              />
-            </div>
+            <Field label="תאריך">
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+            </Field>
+            {type === 'wedding' ? (
+              <>
+                <Field label="קבלת פנים">
+                  <input type="time" value={receptionTime} onChange={e => setReceptionTime(e.target.value)} />
+                </Field>
+                <Field label="חופה וקידושין">
+                  <input type="time" value={time} onChange={e => setTime(e.target.value)} required />
+                </Field>
+              </>
+            ) : (
+              <Field label="שעה">
+                <input type="time" value={time} onChange={e => setTime(e.target.value)} required />
+              </Field>
+            )}
           </div>
 
-          <div className="field">
-            <label>מקום האירוע</label>
+          {/* Venue */}
+          <Field label="שם המקום">
             <input
               type="text"
               value={venue}
@@ -95,7 +158,15 @@ export default function EventCreate({ user, navigate }) {
               placeholder="לדוגמה: גני התערוכה, תל אביב"
               required
             />
-          </div>
+          </Field>
+          <Field label="כתובת (אופציונלי)" hint="יופיע על ההזמנה">
+            <input
+              type="text"
+              value={venueAddress}
+              onChange={e => setVenueAddress(e.target.value)}
+              placeholder="הרוקמים 27, חולון"
+            />
+          </Field>
 
           <div className="form-actions">
             <button type="button" className="btn btn-ghost" onClick={() => navigate({ page: 'dashboard' })}>ביטול</button>

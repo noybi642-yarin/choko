@@ -87,6 +87,14 @@ export function createEvent(data, userId) {
   return event;
 }
 
+export function updateEvent(id, updates) {
+  const s = getStore();
+  setStore({
+    ...s,
+    events: (s.events || []).map(e => e.id === id ? { ...e, ...updates } : e),
+  });
+}
+
 export function deleteEvent(id) {
   const s = getStore();
   setStore({

@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { getEvent } from '../store';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { getEvent, updateEvent } from '../store';
 import { TEMPLATES, TemplateThumbnail, renderTemplate } from '../components/InviteTemplates';
 
 const EVENT_TYPE_LABEL = { wedding: 'חתונה', birthday: 'יום הולדת', bar: 'בר/בת מצווה', other: 'אירוע' };
@@ -8,6 +8,28 @@ function formatDateHebrew(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function buildInitialData(event) {
+  return {
+    eventType:     EVENT_TYPE_LABEL[event.type] || 'אירוע',
+    coupleNames:   event.title || '',
+    subtitle:      event.type === 'wedding'
+      ? 'בלב מלא אהבה ובהתרגשות רבה,\nאנו מזמינים אתכם לחגוג עמנו את\nטקס חתונתנו'
+      : 'מזמינים אתכם לאירוע המיוחד שלנו',
+    hebrewDate:    '',
+    date:          formatDateHebrew(event.date),
+    receptionTime: event.receptionTime || '',
+    ceremonyTime:  event.time || '',
+    venue:         event.venue || '',
+    venueAddress:  event.venueAddress || '',
+    groomsParents: event.groomsParents || '',
+    bridesParents: event.bridesParents || '',
+    honoree:       event.honoree || '',
+    message:       '',
+    dresscode:     '',
+    rsvpDate:      '',
+  };
 }
 
 function Field({ label, name, value, onChange, placeholder, multiline, hint }) {
@@ -38,31 +60,42 @@ function FieldGroup({ title, children }) {
 export default function InviteDesign({ eventId, navigate }) {
   const event = getEvent(eventId);
 
-  const [step, setStep]         = useState('pick');
-  const [templateId, setTemplateId] = useState('wedding-romantic');
-  const [data, setData] = useState(() => ({
-    eventType:       event ? (EVENT_TYPE_LABEL[event.type] || 'אירוע') : 'אירוע',
-    coupleNames:     event?.title || '',
-    subtitle:        event?.type === 'wedding'
-      ? 'בלב מלא אהבה ובהתרגשות רבה,\nאנו מזמינים אתכם לחגוג עמנו את\nטקס חתונתנו'
-      : 'מזמינים אתכם לאירוע המיוחד שלנו',
-    hebrewDate:      '',
-    date:            event ? formatDateHebrew(event.date) : '',
-    receptionTime:   '',
-    ceremonyTime:    event?.time || '',
-    venue:           event?.venue || '',
-    venueAddress:    '',
-    groomsParents:   '',
-    bridesParents:   '',
-    message:         '',
-    dresscode:       '',
-    rsvpDate:        '',
-  }));
+  const [step, setStep] = useState('pick');
+  const [templateId, setTemplateId] = useState(
+    () => event?.inviteTemplateId || (event?.type === 'wedding' ? 'wedding-romantic' : 'wedding-romantic')
+  );
+  const [data, setData] = useState(() => {
+    if (!event) return {};
+    // Prefer previously saved invite edits, otherwise build from event fields
+    return event.inviteData ? { ...buildInitialData(event), ...event.inviteData } : buildInitialData(event);
+  });
+
   const previewRef = useRef();
+
+  // Auto-save invite data to the event whenever it changes
+  const saveDebounceRef = useRef(null);
+  const persistData = useCallback((newData, newTemplateId) => {
+    clearTimeout(saveDebounceRef.current);
+    saveDebounceRef.current = setTimeout(() => {
+      updateEvent(eventId, { inviteData: newData, inviteTemplateId: newTemplateId });
+    }, 600);
+  }, [eventId]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => () => clearTimeout(saveDebounceRef.current), []);
 
   if (!event) return <div className="page-content"><p>האירוע לא נמצא.</p></div>;
 
-  const handleChange = (e) => setData(d => ({ ...d, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const next = { ...data, [e.target.name]: e.target.value };
+    setData(next);
+    persistData(next, templateId);
+  };
+
+  const handleTemplateChange = (id) => {
+    setTemplateId(id);
+    persistData(data, id);
+  };
 
   const handlePrint = () => {
     const content = previewRef.current?.innerHTML;
@@ -79,8 +112,6 @@ export default function InviteDesign({ eventId, navigate }) {
     w.focus();
     setTimeout(() => w.print(), 700);
   };
-
-  const isWeddingTemplate = ['wedding-romantic','wedding-vintage','wedding-minimal','wedding-garden','wedding-artdeco'].includes(templateId);
 
   return (
     <div className="page-content">
@@ -107,13 +138,13 @@ export default function InviteDesign({ eventId, navigate }) {
         ))}
       </div>
 
-      {/* Step 1 */}
+      {/* Step 1 — pick template */}
       {step === 'pick' && (
         <div className="inv-section">
           <div className="template-grid">
             {TEMPLATES.map(t => (
               <TemplateThumbnail key={t.id} template={t} selected={templateId === t.id}
-                onClick={() => setTemplateId(t.id)} />
+                onClick={() => handleTemplateChange(t.id)} />
             ))}
           </div>
           <div className="inv-footer">
@@ -122,7 +153,7 @@ export default function InviteDesign({ eventId, navigate }) {
         </div>
       )}
 
-      {/* Step 2 */}
+      {/* Step 2 — edit */}
       {step === 'edit' && (
         <div className="inv-edit-layout">
           <div className="inv-form-col">
@@ -156,12 +187,14 @@ export default function InviteDesign({ eventId, navigate }) {
                   placeholder="20:00" />
               </FieldGroup>
 
-              <FieldGroup title="הורים (אופציונלי)">
-                <Field label="הורי החתן" name="groomsParents" value={data.groomsParents} onChange={handleChange}
-                  placeholder="שלום ישראלי וישראלה שלום" />
-                <Field label="הורי הכלה" name="bridesParents" value={data.bridesParents} onChange={handleChange}
-                  placeholder="ויוסי ושמרית" />
-              </FieldGroup>
+              {event.type === 'wedding' && (
+                <FieldGroup title="הורים (אופציונלי)">
+                  <Field label="הורי החתן" name="groomsParents" value={data.groomsParents} onChange={handleChange}
+                    placeholder="שלום ישראלי וישראלה שלום" />
+                  <Field label="הורי הכלה" name="bridesParents" value={data.bridesParents} onChange={handleChange}
+                    placeholder="ויוסי ושמרית" />
+                </FieldGroup>
+              )}
 
               <FieldGroup title="נוסף">
                 <Field label="קוד לבוש" name="dresscode" value={data.dresscode} onChange={handleChange}
@@ -183,7 +216,7 @@ export default function InviteDesign({ eventId, navigate }) {
         </div>
       )}
 
-      {/* Step 3 */}
+      {/* Step 3 — preview */}
       {step === 'preview' && (
         <div className="inv-section">
           <div className="inv-preview-full-wrap">
