@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getEvents, getGuests, deleteEvent } from '../store';
+import KPISection from '../components/KPISection';
 
 const EVENT_TYPE_LABELS = { wedding: 'חתונה', birthday: 'יום הולדת', bar: 'בר/בת מצווה', other: 'אחר' };
 const EVENT_TYPE_EMOJI = { wedding: '💍', birthday: '🎂', bar: '✡️', other: '🎉' };
@@ -74,6 +75,8 @@ export default function Dashboard({ user, navigate }) {
           + צור אירוע חדש
         </button>
       </div>
+
+      {events.length > 0 && <KPISection userId={user.email} />}
 
       {events.length === 0 ? (
         <div className="empty-state">
