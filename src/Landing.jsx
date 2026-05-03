@@ -3,7 +3,7 @@ import PhoneRSVP from './PhoneRSVP';
 import { Steps, Features, AppBanner, Pricing, FooterCTA } from './Sections';
 import { RainbowBorderButton } from './components/ui/RainbowBorderButton';
 
-function Nav({ onLogin }) {
+function Nav({ onLogin, navigate }) {
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function Landing({ onLogin, onAI, navigate }) {
 
   return (
     <>
-      <Nav onLogin={onLogin} />
+      <Nav onLogin={onLogin} navigate={navigate} />
 
       <section className="lp-hero">
         {/* Background orbs */}
