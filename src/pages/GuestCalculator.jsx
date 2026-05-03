@@ -1,166 +1,115 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 // ── SEO ──────────────────────────────────────────────────────────────────────
 
 function SEOMeta() {
   useEffect(() => {
     document.title = 'מחשבון מוזמנים לחתונה | כמה באמת יגיעו? | Choko';
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    meta.content = 'גלו כמה מוזמנים באמת יגיעו לחתונה שלכם. מחשבון חכם לזוגות מתחתנים בישראל + אישורי הגעה דיגיטליים.';
-    return () => { document.title = 'choko'; };
+    let m = document.querySelector('meta[name="description"]');
+    if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); }
+    m.content = 'גלו כמה מוזמנים באמת יגיעו לחתונה שלכם. מחשבון חכם לזוגות מתחתנים בישראל + אישורי הגעה דיגיטליים.';
+    return () => { document.title = 'choko'; m.content = ''; };
   }, []);
   return null;
+}
+
+// ── Count-up hook ─────────────────────────────────────────────────────────────
+
+function useCountUp(target, duration = 800) {
+  const [val, setVal] = useState(target);
+  const prev = useRef(target);
+  const raf  = useRef(null);
+  useEffect(() => {
+    const from = prev.current;
+    prev.current = target;
+    if (from === target) return;
+    const start = performance.now();
+    const tick = now => {
+      const p = Math.min((now - start) / duration, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(from + (target - from) * e));
+      if (p < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, duration]);
+  return val;
 }
 
 // ── Calculation Engine ────────────────────────────────────────────────────────
 
 const BASE_RATES = {
-  closeFamily:    0.93,
-  distantFamily:  0.76,
-  bridesFriends:  0.68,
-  groomsFriends:  0.68,
-  workColleagues: 0.42,
-  parentsGuests:  0.71,
-  children:       0.88,
+  closeFamily: 0.93, distantFamily: 0.76,
+  bridesFriends: 0.68, groomsFriends: 0.68,
+  workColleagues: 0.42, parentsGuests: 0.71, children: 0.88,
 };
-
-const REGION_MOD   = { center: 0, north: -0.06, south: -0.06, jerusalem: -0.04, mixed: -0.03 };
-const SEASON_MOD   = { summer: -0.04, winter: -0.06, friday: +0.06, evening: 0 };
-const NOTICE_MOD   = { twoMonths: +0.04, oneMonth: 0, twoWeeks: -0.10 };
-const REL_MOD      = { close: +0.06, medium: 0, weak: -0.12 };
+const REGION_MOD = { center: 0, north: -0.06, south: -0.06, jerusalem: -0.04, mixed: -0.03 };
+const SEASON_MOD = { summer: -0.04, winter: -0.06, friday: +0.06, evening: 0 };
+const NOTICE_MOD = { twoMonths: +0.04, oneMonth: 0, twoWeeks: -0.10 };
+const REL_MOD    = { close: +0.06, medium: 0, weak: -0.12 };
 
 function calculate(inp) {
-  const { closeFamily, distantFamily, bridesFriends, groomsFriends,
-          workColleagues, parentsGuests, children,
-          region, season, notice, relationship } = inp;
-
-  const mod = (REGION_MOD[region] || 0) + (SEASON_MOD[season] || 0)
-            + (NOTICE_MOD[notice] || 0) + (REL_MOD[relationship] || 0);
-
+  const mod = (REGION_MOD[inp.region] || 0) + (SEASON_MOD[inp.season] || 0)
+            + (NOTICE_MOD[inp.notice] || 0) + (REL_MOD[inp.relationship] || 0);
   const cap = r => Math.min(0.97, Math.max(0.08, r + mod));
-
-  const attending = Math.round(
-    closeFamily    * cap(BASE_RATES.closeFamily)    +
-    distantFamily  * cap(BASE_RATES.distantFamily)  +
-    bridesFriends  * cap(BASE_RATES.bridesFriends)  +
-    groomsFriends  * cap(BASE_RATES.groomsFriends)  +
-    workColleagues * cap(BASE_RATES.workColleagues) +
-    parentsGuests  * cap(BASE_RATES.parentsGuests)  +
-    children       * cap(BASE_RATES.children)
-  );
-
-  const total     = closeFamily + distantFamily + bridesFriends + groomsFriends
-                  + workColleagues + parentsGuests + children;
+  const keys = ['closeFamily','distantFamily','bridesFriends','groomsFriends','workColleagues','parentsGuests','children'];
+  const total = keys.reduce((s, k) => s + (inp[k] || 0), 0);
+  const attending = Math.round(keys.reduce((s, k) => s + (inp[k] || 0) * cap(BASE_RATES[k]), 0));
   const declining = Math.max(0, total - attending);
-  const noShows   = Math.round(attending * 0.09);
-  const actual    = attending - noShows;
-  const meals     = Math.ceil(actual * 1.08 / 5) * 5;
-  const buffer    = meals - actual;
-  const pct       = total > 0 ? Math.round((attending / total) * 100) : 0;
-
-  // Breakdown by category (for chart)
-  const breakdown = [
-    { label: 'משפחה קרובה',  value: Math.round(closeFamily    * cap(BASE_RATES.closeFamily)),    color: '#e8645a' },
-    { label: 'משפחה רחוקה',  value: Math.round(distantFamily  * cap(BASE_RATES.distantFamily)),  color: '#f59e0b' },
-    { label: "חברי הכלה",   value: Math.round(bridesFriends  * cap(BASE_RATES.bridesFriends)),  color: '#8b5cf6' },
-    { label: "חברי החתן",   value: Math.round(groomsFriends  * cap(BASE_RATES.groomsFriends)),  color: '#6366f1' },
-    { label: 'קולגות',        value: Math.round(workColleagues * cap(BASE_RATES.workColleagues)), color: '#14b8a6' },
-    { label: 'מוזמני הורים',  value: Math.round(parentsGuests  * cap(BASE_RATES.parentsGuests)),  color: '#10b981' },
-    { label: 'ילדים',         value: Math.round(children       * cap(BASE_RATES.children)),       color: '#f97316' },
-  ].filter(b => b.value > 0);
-
+  const noShows  = Math.round(attending * 0.09);
+  const actual   = attending - noShows;
+  const meals    = Math.ceil(actual * 1.08 / 5) * 5;
+  const buffer   = meals - actual;
+  const pct      = total > 0 ? Math.round((attending / total) * 100) : 0;
+  const COLORS   = ['#e8645a','#f59e0b','#8b5cf6','#6366f1','#14b8a6','#10b981','#f97316'];
+  const LABELS   = ['משפחה קרובה','משפחה רחוקה','חברות הכלה','חברי החתן','קולגות','מוזמני הורים','ילדים'];
+  const breakdown = keys.map((k, i) => ({
+    label: LABELS[i], color: COLORS[i],
+    invited: inp[k] || 0,
+    value: Math.round((inp[k] || 0) * cap(BASE_RATES[k])),
+    rate: Math.round(cap(BASE_RATES[k]) * 100),
+  })).filter(b => b.invited > 0);
   return { total, attending, declining, noShows, actual, meals, buffer, pct, breakdown };
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Category data ─────────────────────────────────────────────────────────────
 
-function NumInput({ label, name, value, onChange, emoji }) {
-  return (
-    <div className="gc-num-field">
-      <div className="gc-num-label">
-        <span className="gc-num-emoji">{emoji}</span>
-        <span>{label}</span>
-      </div>
-      <div className="gc-num-controls">
-        <button type="button" className="gc-num-btn" onClick={() => onChange(name, Math.max(0, value - 5))}>−</button>
-        <input
-          type="number" min={0} max={999}
-          value={value}
-          onChange={e => onChange(name, Math.max(0, +e.target.value || 0))}
-          className="gc-num-input"
-        />
-        <button type="button" className="gc-num-btn" onClick={() => onChange(name, value + 5)}>+</button>
-      </div>
-    </div>
-  );
-}
+const CATEGORIES = [
+  { key: 'closeFamily',    label: 'משפחה קרובה',    emoji: '👨‍👩‍👧‍👦', rate: '~93%', hint: 'הורים, אחים, דודים קרובים' },
+  { key: 'distantFamily',  label: 'משפחה רחוקה',    emoji: '👴',      rate: '~76%', hint: 'דודנים, קרובים מרוחקים' },
+  { key: 'bridesFriends',  label: 'חברות הכלה',     emoji: '👰',      rate: '~68%', hint: 'חברות אישיות של הכלה' },
+  { key: 'groomsFriends',  label: 'חברים של החתן',  emoji: '🤵',      rate: '~68%', hint: 'חברים אישיים של החתן' },
+  { key: 'workColleagues', label: 'עבודה / קולגות', emoji: '💼',      rate: '~42%', hint: 'עמיתים ומנהלים' },
+  { key: 'parentsGuests',  label: 'מוזמני ההורים',  emoji: '🎩',      rate: '~71%', hint: 'אנשי הורים' },
+  { key: 'children',       label: 'ילדים',           emoji: '🧒',      rate: '~88%', hint: 'ילדי המוזמנים' },
+];
 
-function OptionGroup({ label, name, value, options, onChange }) {
-  return (
-    <div className="gc-option-group">
-      <div className="gc-option-label">{label}</div>
-      <div className="gc-options">
-        {options.map(opt => (
-          <button
-            key={opt.value}
-            type="button"
-            className={`gc-option-btn ${value === opt.value ? 'active' : ''}`}
-            onClick={() => onChange(name, opt.value)}
-          >
-            {opt.emoji && <span>{opt.emoji}</span>}
-            <span>{opt.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+const REGIONS = [
+  { value: 'center',    label: 'מרכז',    emoji: '🏙️' },
+  { value: 'north',     label: 'צפון',    emoji: '🌲' },
+  { value: 'south',     label: 'דרום',    emoji: '🌵' },
+  { value: 'jerusalem', label: 'ירושלים', emoji: '🕌' },
+  { value: 'mixed',     label: 'מעורב',   emoji: '🗺️' },
+];
 
-function ResultCard({ label, value, sub, accent, big, delay = 0 }) {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setShown(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-  return (
-    <div className={`gc-result-card ${accent ? 'gc-result-card--accent' : ''} ${big ? 'gc-result-card--big' : ''} ${shown ? 'is-visible' : ''}`}>
-      <div className="gc-result-val">{value}</div>
-      <div className="gc-result-label">{label}</div>
-      {sub && <div className="gc-result-sub">{sub}</div>}
-    </div>
-  );
-}
+const SEASONS = [
+  { value: 'evening', label: 'ערב רגיל',     emoji: '🌙', hint: '+0%' },
+  { value: 'friday',  label: 'שישי צהריים',  emoji: '☀️', hint: '+6%' },
+  { value: 'summer',  label: 'קיץ',          emoji: '🌞', hint: '−4%' },
+  { value: 'winter',  label: 'חורף',         emoji: '🌧️', hint: '−6%' },
+];
 
-function BreakdownBar({ breakdown, total }) {
-  if (!total) return null;
-  return (
-    <div className="gc-breakdown">
-      <div className="gc-breakdown-title">פילוח לפי קטגוריה</div>
-      <div className="gc-bar-track">
-        {breakdown.map((b, i) => (
-          <div
-            key={i}
-            className="gc-bar-seg"
-            style={{ width: `${(b.value / total) * 100}%`, background: b.color }}
-            title={`${b.label}: ${b.value}`}
-          />
-        ))}
-      </div>
-      <div className="gc-breakdown-legend">
-        {breakdown.map((b, i) => (
-          <div key={i} className="gc-legend-item">
-            <span className="gc-legend-dot" style={{ background: b.color }} />
-            <span className="gc-legend-label">{b.label}</span>
-            <span className="gc-legend-n">{b.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const NOTICE_OPTIONS = [
+  { value: 'twoMonths', label: 'חודשיים',  hint: '+4%' },
+  { value: 'oneMonth',  label: 'חודש',     hint: '±0%' },
+  { value: 'twoWeeks',  label: 'שבועיים',  hint: '−10%' },
+];
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+const REL_OPTIONS = [
+  { value: 'close',  label: 'קרובה',   emoji: '❤️',  hint: '+6%' },
+  { value: 'medium', label: 'בינונית', emoji: '🤝',  hint: '±0%' },
+  { value: 'weak',   label: 'חלשה',    emoji: '👋',  hint: '−12%' },
+];
 
 const DEFAULT_INPUTS = {
   closeFamily: 40, distantFamily: 30, bridesFriends: 30, groomsFriends: 30,
@@ -168,387 +117,571 @@ const DEFAULT_INPUTS = {
   region: 'center', season: 'evening', notice: 'oneMonth', relationship: 'medium',
 };
 
+const SAMPLE_INPUTS = {
+  closeFamily: 55, distantFamily: 40, bridesFriends: 35, groomsFriends: 35,
+  workColleagues: 25, parentsGuests: 50, children: 25,
+  region: 'center', season: 'friday', notice: 'oneMonth', relationship: 'medium',
+};
+
+const STEPS = ['סוגי מוזמנים', 'פרטי האירוע', 'רמת קשר', 'תוצאות'];
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function AnimNum({ value, suffix = '' }) {
+  const v = useCountUp(value);
+  return <>{v.toLocaleString('he-IL')}{suffix}</>;
+}
+
+function GuestSlider({ cat, value, onChange }) {
+  const pct = Math.min((value / 100) * 100, 100);
+  return (
+    <div className="gc2-cat-card">
+      <div className="gc2-cat-top">
+        <div className="gc2-cat-left">
+          <span className="gc2-cat-emoji">{cat.emoji}</span>
+          <div>
+            <div className="gc2-cat-name">{cat.label}</div>
+            <div className="gc2-cat-hint">{cat.hint}</div>
+          </div>
+        </div>
+        <div className="gc2-cat-right">
+          <button className="gc2-adj" onClick={() => onChange(cat.key, Math.max(0, value - 5))}>−</button>
+          <span className="gc2-cat-val">{value}</span>
+          <button className="gc2-adj" onClick={() => onChange(cat.key, Math.min(200, value + 5))}>+</button>
+          <span className="gc2-cat-rate">{cat.rate}</span>
+        </div>
+      </div>
+      <div className="gc2-slider-wrap">
+        <input
+          type="range" min={0} max={150} step={5} value={value}
+          onChange={e => onChange(cat.key, +e.target.value)}
+          className="gc2-slider"
+          style={{ '--pct': `${(value / 150) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SegCard({ opt, active, onClick }) {
+  return (
+    <button className={`gc2-seg-card ${active ? 'active' : ''}`} onClick={onClick}>
+      {opt.emoji && <span className="gc2-seg-emoji">{opt.emoji}</span>}
+      <span className="gc2-seg-label">{opt.label}</span>
+      {opt.hint && <span className="gc2-seg-hint">{opt.hint}</span>}
+    </button>
+  );
+}
+
+function Chip({ opt, active, onClick }) {
+  return (
+    <button className={`gc2-chip-btn ${active ? 'active' : ''}`} onClick={onClick}>
+      {opt.emoji && <span>{opt.emoji}</span>}
+      <span>{opt.label}</span>
+      {opt.hint && <span className="gc2-chip-hint">{opt.hint}</span>}
+    </button>
+  );
+}
+
+function LivePanel({ results, total, visible }) {
+  return (
+    <div className={`gc2-live-panel ${visible ? 'visible' : ''}`}>
+      <div className="gc2-live-header">
+        <div className="gc2-live-dot" />
+        <span>תצוגה חיה</span>
+      </div>
+      <div className="gc2-live-ring-wrap">
+        <svg viewBox="0 0 96 96" className="gc2-live-ring-svg">
+          <circle cx="48" cy="48" r="40" fill="none" stroke="oklch(0.92 0.04 75)" strokeWidth="7"/>
+          <circle cx="48" cy="48" r="40" fill="none" stroke="#C9A84C" strokeWidth="7"
+            strokeLinecap="round"
+            strokeDasharray={`${(results.pct / 100) * 251.3} 251.3`}
+            style={{ transform:'rotate(-90deg)', transformOrigin:'48px 48px', transition:'stroke-dasharray 0.7s cubic-bezier(.4,0,.2,1)' }}
+          />
+        </svg>
+        <div className="gc2-live-ring-inner">
+          <div className="gc2-live-pct"><AnimNum value={results.pct} suffix="%" /></div>
+          <div className="gc2-live-pct-label">יגיעו</div>
+        </div>
+      </div>
+      <div className="gc2-live-stats">
+        <div className="gc2-live-stat">
+          <span className="gc2-live-stat-n"><AnimNum value={total} /></span>
+          <span className="gc2-live-stat-l">מוזמנים</span>
+        </div>
+        <div className="gc2-live-stat accent">
+          <span className="gc2-live-stat-n"><AnimNum value={results.attending} /></span>
+          <span className="gc2-live-stat-l">צפויים</span>
+        </div>
+        <div className="gc2-live-stat">
+          <span className="gc2-live-stat-n"><AnimNum value={results.meals} /></span>
+          <span className="gc2-live-stat-l">מנות</span>
+        </div>
+      </div>
+      <div className="gc2-live-bar-track">
+        <div className="gc2-live-bar-fill" style={{ width: `${results.pct}%` }} />
+      </div>
+      <div className="gc2-live-range">
+        <span>0%</span><span>ממוצע ישראלי 67%</span><span>100%</span>
+      </div>
+    </div>
+  );
+}
+
+function ResultsView({ results, onLogin }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setShown(true), 50); return () => clearTimeout(t); }, []);
+
+  const CARDS = [
+    { label: 'סה״כ מוזמנים',       value: results.total,     sub: 'בסגירת האולם' },
+    { label: 'צפויים להגיע',       value: results.attending,  sub: 'לפי חישוב חכם', accent: true },
+    { label: 'לא יגיעו',           value: results.declining,  sub: 'ביטולים צפויים' },
+    { label: 'ביטולי יום האירוע',  value: results.noShows,   sub: '~9% מהמאשרים' },
+    { label: 'יגיעו בפועל',        value: results.actual,    sub: 'נוכחות אמיתית', accent: true },
+    { label: 'מנות לסגור',         value: results.meals,     sub: `+ רזרבה ${results.buffer}`, big: true, gold: true },
+  ];
+
+  return (
+    <div className={`gc2-results ${shown ? 'in' : ''}`}>
+      {/* Big ring */}
+      <div className="gc2-res-ring-wrap">
+        <div className="gc2-res-ring-card">
+          <svg viewBox="0 0 140 140" className="gc2-res-svg">
+            <circle cx="70" cy="70" r="58" fill="none" stroke="oklch(0.93 0.03 75)" strokeWidth="10"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="#C9A84C" strokeWidth="10"
+              strokeLinecap="round"
+              strokeDasharray={`${(results.pct / 100) * 364.4} 364.4`}
+              style={{ transform:'rotate(-90deg)', transformOrigin:'70px 70px', transition:'stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1) 0.3s' }}
+            />
+          </svg>
+          <div className="gc2-res-ring-inner">
+            <div className="gc2-res-pct"><AnimNum value={results.pct} />%</div>
+            <div className="gc2-res-pct-label">אחוז הגעה</div>
+          </div>
+        </div>
+        <div className="gc2-res-ring-context">
+          <h3 className="gc2-res-context-title">
+            {results.pct >= 72 ? 'מעל הממוצע! 🎉' : results.pct >= 60 ? 'אחוז ממוצע ✅' : 'מתחת לממוצע ⚠️'}
+          </h3>
+          <p className="gc2-res-context-desc">
+            {results.pct >= 72
+              ? 'האירוע שלכם צפוי למשוך קהל מגובש. הרשימה שלכם חזקה!'
+              : results.pct >= 60
+              ? 'אחוז הגעה סביר לחתונה ישראלית. שקלו לשלוח תזכורות.'
+              : 'כדאי לשקול B-list, לשלוח הזמנות מוקדם יותר, או לחזק קשרים.'}
+          </p>
+          <div className="gc2-res-avg-bar">
+            <div className="gc2-res-avg-track">
+              <div className="gc2-res-avg-mark" style={{ right: '33%' }} title="ממוצע ישראלי 67%" />
+              <div className="gc2-res-avg-fill" style={{ width: `${results.pct}%` }} />
+            </div>
+            <div className="gc2-res-avg-labels">
+              <span>0%</span><span>ממוצע 67%</span><span>100%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div className="gc2-res-cards">
+        {CARDS.map((c, i) => (
+          <div key={i} className={`gc2-res-card ${c.accent ? 'accent' : ''} ${c.gold ? 'gold' : ''}`}
+               style={{ transitionDelay: `${i * 80}ms` }}>
+            <div className="gc2-res-val"><AnimNum value={c.value} /></div>
+            <div className="gc2-res-label">{c.label}</div>
+            <div className="gc2-res-sub">{c.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Breakdown */}
+      {results.breakdown.length > 0 && (
+        <div className="gc2-breakdown-card">
+          <h4 className="gc2-breakdown-title">פילוח לפי קטגוריה</h4>
+          <div className="gc2-breakdown-bar">
+            {results.breakdown.filter(b => b.value > 0).map((b, i) => (
+              <div key={i} className="gc2-bar-seg"
+                   style={{ width: `${(b.value / results.attending) * 100}%`, background: b.color }}
+                   title={`${b.label}: ${b.value}`} />
+            ))}
+          </div>
+          <div className="gc2-breakdown-rows">
+            {results.breakdown.map((b, i) => (
+              <div key={i} className="gc2-breakdown-row">
+                <div className="gc2-breakdown-left">
+                  <span className="gc2-breakdown-dot" style={{ background: b.color }} />
+                  <span className="gc2-breakdown-lbl">{b.label}</span>
+                </div>
+                <div className="gc2-breakdown-right">
+                  <span className="gc2-breakdown-invited">{b.invited} מוזמנים</span>
+                  <span className="gc2-breakdown-arrow">→</span>
+                  <span className="gc2-breakdown-val">{b.value} יגיעו</span>
+                  <span className="gc2-breakdown-rate" style={{ color: b.color }}>{b.rate}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Insights */}
+      <div className="gc2-insights">
+        <div className="gc2-insight">
+          <span className="gc2-insight-icon">💡</span>
+          <div><strong>רזרבת מנות:</strong> {results.buffer} מנות ({Math.round((results.buffer / results.meals) * 100)}%) מעל הצפי — הסטנדרט הישראלי.</div>
+        </div>
+        <div className="gc2-insight">
+          <span className="gc2-insight-icon">📱</span>
+          <div><strong>טיפ:</strong> שלחו תזכורת WhatsApp 48 שעות לפני — מוריד no-show ב-30%.</div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="gc2-res-cta">
+        <div className="gc2-res-cta-badge">✨ הכלי הבא</div>
+        <h3 className="gc2-res-cta-title">רוצים לדעת באמת מי מגיע?</h3>
+        <p className="gc2-res-cta-desc">
+          עברו לאישורי הגעה חכמים עם Choko — שלחו הזמנות WhatsApp,
+          קבלו אישורים דיגיטליים ועקבו אחרי כל אורח בזמן אמת.
+        </p>
+        <div className="gc2-res-cta-btns">
+          <button className="gc2-cta-primary" onClick={onLogin}>התחל עכשיו — חינם</button>
+          <button className="gc2-cta-secondary" onClick={onLogin}>נהל מוזמנים ←</button>
+        </div>
+        <div className="gc2-res-cta-trust">✓ ללא כרטיס אשראי &nbsp;·&nbsp; ✓ בעברית &nbsp;·&nbsp; ✓ מוכן תוך דקה</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Content sections ──────────────────────────────────────────────────────────
+
+const FAQ_ITEMS = [
+  { q: 'כמה אחוז מהמוזמנים באמת מגיעים?', a: 'בממוצע ישראלי — 65–72%. משפחה קרובה מגיעה ב-90%+, קולגות ב-40–50% בלבד.' },
+  { q: 'כמה מנות לסגור עם האולם?', a: 'המקובל: 8–12% מעל המאשרים הסופי. אם 180 אישרו — סגרו על 194–200 מנות.' },
+  { q: 'למה לא כולם עונים להזמנה?', a: 'שתי הסיבות העיקריות: לא ידעו שצריך לאשר, או שקיבלו את ההזמנה מאוחר מדי.' },
+  { q: 'מתי הכי טוב לשלוח הזמנות?', a: 'חודש וחצי עד חודשיים לפני — נותן זמן לתכנן אבל לא נשכח.' },
+  { q: 'איך Choko עוזרת לעקוב?', a: 'שולחים הזמנות WhatsApp, האורחים מאשרים בלחיצה, ורואים הכל בזמן אמת בדשבורד.' },
+];
+
+function FAQItem({ item }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`gc2-faq-item ${open ? 'open' : ''}`} onClick={() => setOpen(o => !o)}>
+      <div className="gc2-faq-q">
+        <span>{item.q}</span>
+        <span className="gc2-faq-arrow">{open ? '−' : '+'}</span>
+      </div>
+      {open && <div className="gc2-faq-a">{item.a}</div>}
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function GuestCalculator({ navigate, onLogin }) {
-  const [inputs, setInputs]     = useState(DEFAULT_INPUTS);
-  const [results, setResults]   = useState(null);
-  const [calculated, setCalc]   = useState(false);
-  const resultsRef              = useRef(null);
+  const [inputs, setInputs] = useState(DEFAULT_INPUTS);
+  const [step, setStep]     = useState(0);
+  const calcRef             = useRef(null);
 
   const setField = (k, v) => setInputs(p => ({ ...p, [k]: v }));
 
-  const handleCalculate = () => {
-    const r = calculate(inputs);
-    setResults(r);
-    setCalc(true);
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+  const results = useMemo(() => calculate(inputs), [inputs]);
+  const total   = useMemo(() =>
+    ['closeFamily','distantFamily','bridesFriends','groomsFriends','workColleagues','parentsGuests','children']
+      .reduce((s, k) => s + (inputs[k] || 0), 0),
+    [inputs]
+  );
+
+  const scrollToCalc = () => {
+    calcRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const total = inputs.closeFamily + inputs.distantFamily + inputs.bridesFriends
-              + inputs.groomsFriends + inputs.workColleagues + inputs.parentsGuests
-              + inputs.children;
+  const handleExample = () => {
+    setInputs(SAMPLE_INPUTS);
+    setStep(0);
+    scrollToCalc();
+  };
+
+  const doLogin = onLogin || (() => navigate?.({ page: 'login' }));
 
   return (
     <>
       <SEOMeta />
-      <div className="gc-page" dir="rtl">
+      <div className="gc2-page">
 
         {/* ── Nav ── */}
-        <nav className="gc-nav">
-          <div className="gc-nav-inner">
-            <button className="gc-logo" onClick={() => navigate({ page: 'landing' })}>
-              choko<span className="gc-logo-dot" />
+        <nav className="gc2-nav">
+          <div className="gc2-nav-inner">
+            <button className="gc2-logo" onClick={() => navigate?.({ page: 'landing' })}>
+              choko<span className="gc2-logo-dot" />
             </button>
-            <div className="gc-nav-end">
-              {onLogin && (
-                <>
-                  <button className="lp-nav-btn lp-nav-btn--ghost" onClick={onLogin}>כניסה</button>
-                  <button className="lp-nav-btn lp-nav-btn--fill" onClick={onLogin}>התחל חינם</button>
-                </>
-              )}
+            <div className="gc2-nav-end">
+              <button className="gc2-nav-ghost" onClick={doLogin}>כניסה</button>
+              <button className="gc2-nav-fill" onClick={doLogin}>התחל חינם</button>
             </div>
           </div>
         </nav>
 
         {/* ── Hero ── */}
-        <header className="gc-hero">
-          <div className="gc-hero-orb gc-hero-orb--a" />
-          <div className="gc-hero-orb gc-hero-orb--b" />
-          <div className="gc-hero-inner">
-            <div className="gc-eyebrow">
-              <span className="gc-eyebrow-dot" />
-              כלי חינמי לזוגות מתחתנים
+        <section className="gc2-hero">
+          <div className="gc2-hero-orb gc2-hero-orb--a" />
+          <div className="gc2-hero-orb gc2-hero-orb--b" />
+          <div className="gc2-hero-orb gc2-hero-orb--c" />
+          <div className="gc2-hero-inner">
+            <div className="gc2-hero-badge">
+              <span className="gc2-badge-dot" />
+              מחשבון חכם לזוגות מתחתנים בישראל
             </div>
-            <h1 className="gc-h1">
+            <h1 className="gc2-hero-h1">
               כמה מוזמנים<br />
-              <span className="gc-h1-grad">באמת יגיעו?</span>
+              <span className="gc2-hero-h1-gold">באמת יגיעו?</span>
             </h1>
-            <p className="gc-hero-sub">
-              מחשבון חכם שלוקח בחשבון עונה, מרחק, וסוג קשר —
-              כדי שתדעו בדיוק כמה מנות לסגור עם האולם.
+            <p className="gc2-hero-sub">
+              מחשבון שמעריך הגעה אמיתית לפי סוג המוזמנים,
+              מיקום האירוע והרגלי RSVP בישראל
             </p>
-            <div className="gc-hero-chips">
-              <span className="gc-chip">✅ חינם לחלוטין</span>
-              <span className="gc-chip">🇮🇱 מבוסס על חתונות ישראליות</span>
-              <span className="gc-chip">⚡ תוצאות מיידיות</span>
-            </div>
-          </div>
-        </header>
-
-        {/* ── Calculator Card ── */}
-        <div className="gc-container">
-          <div className="gc-card">
-
-            {/* Guest count inputs */}
-            <div className="gc-section">
-              <div className="gc-section-header">
-                <div className="gc-section-icon">👥</div>
-                <div>
-                  <div className="gc-section-title">כמות מוזמנים לפי קטגוריה</div>
-                  <div className="gc-section-sub">סה״כ: <strong>{total}</strong> מוזמנים</div>
-                </div>
-              </div>
-              <div className="gc-num-grid">
-                <NumInput label="משפחה קרובה"    name="closeFamily"    value={inputs.closeFamily}    onChange={setField} emoji="👨‍👩‍👧‍👦" />
-                <NumInput label="משפחה רחוקה"    name="distantFamily"  value={inputs.distantFamily}  onChange={setField} emoji="👴" />
-                <NumInput label="חברות הכלה"     name="bridesFriends"  value={inputs.bridesFriends}  onChange={setField} emoji="👰" />
-                <NumInput label="חברים של החתן"  name="groomsFriends"  value={inputs.groomsFriends}  onChange={setField} emoji="🤵" />
-                <NumInput label="עבודה / קולגות" name="workColleagues" value={inputs.workColleagues} onChange={setField} emoji="💼" />
-                <NumInput label="מוזמני ההורים"  name="parentsGuests"  value={inputs.parentsGuests}  onChange={setField} emoji="🎩" />
-                <NumInput label="ילדים"           name="children"       value={inputs.children}       onChange={setField} emoji="🧒" />
-              </div>
-            </div>
-
-            <div className="gc-divider" />
-
-            {/* Options */}
-            <div className="gc-section">
-              <div className="gc-section-header">
-                <div className="gc-section-icon">⚙️</div>
-                <div>
-                  <div className="gc-section-title">פרטי האירוע</div>
-                  <div className="gc-section-sub">משפיעים על אחוז ההגעה</div>
-                </div>
-              </div>
-              <div className="gc-options-grid">
-                <OptionGroup
-                  label="אזור בארץ"
-                  name="region"
-                  value={inputs.region}
-                  onChange={setField}
-                  options={[
-                    { value: 'center',    label: 'מרכז',     emoji: '🏙️' },
-                    { value: 'north',     label: 'צפון',     emoji: '🌲' },
-                    { value: 'south',     label: 'דרום',     emoji: '🌵' },
-                    { value: 'jerusalem', label: 'ירושלים',  emoji: '🕌' },
-                    { value: 'mixed',     label: 'מעורב',    emoji: '🗺️' },
-                  ]}
-                />
-                <OptionGroup
-                  label="סוג / עונת האירוע"
-                  name="season"
-                  value={inputs.season}
-                  onChange={setField}
-                  options={[
-                    { value: 'evening', label: 'ערב רגיל',      emoji: '🌙' },
-                    { value: 'friday',  label: 'שישי צהריים',   emoji: '☀️' },
-                    { value: 'summer',  label: 'חתונת קיץ',     emoji: '🌞' },
-                    { value: 'winter',  label: 'חתונת חורף',    emoji: '🌧️' },
-                  ]}
-                />
-                <OptionGroup
-                  label="כמה זמן מראש שולחים הזמנות"
-                  name="notice"
-                  value={inputs.notice}
-                  onChange={setField}
-                  options={[
-                    { value: 'twoMonths', label: 'חודשיים',   emoji: '📅' },
-                    { value: 'oneMonth',  label: 'חודש',      emoji: '🗓️' },
-                    { value: 'twoWeeks',  label: 'שבועיים',   emoji: '⚡' },
-                  ]}
-                />
-                <OptionGroup
-                  label="רמת הקשר הממוצעת עם המוזמנים"
-                  name="relationship"
-                  value={inputs.relationship}
-                  onChange={setField}
-                  options={[
-                    { value: 'close',  label: 'קרובה',   emoji: '❤️' },
-                    { value: 'medium', label: 'בינונית', emoji: '🤝' },
-                    { value: 'weak',   label: 'חלשה',    emoji: '👋' },
-                  ]}
-                />
-              </div>
-            </div>
-
-            {/* CTA */}
-            <div className="gc-calc-cta">
-              <button className="gc-calc-btn" onClick={handleCalculate}>
-                <span>חשב לי עכשיו</span>
-                <span className="gc-calc-btn-arrow">←</span>
+            <div className="gc2-hero-ctas">
+              <button className="gc2-hero-cta-primary" onClick={scrollToCalc}>
+                <span>התחילו לחשב</span>
+                <span>←</span>
               </button>
-              {total > 0 && (
-                <div className="gc-calc-hint">
-                  {total} מוזמנים · תוצאות מיידיות
+              <button className="gc2-hero-cta-ghost" onClick={handleExample}>
+                ראו דוגמה
+              </button>
+            </div>
+            {/* Floating stats card */}
+            <div className="gc2-hero-float-card">
+              <div className="gc2-float-row">
+                <div className="gc2-float-stat">
+                  <div className="gc2-float-n">147</div>
+                  <div className="gc2-float-l">מוזמנים</div>
                 </div>
-              )}
+                <div className="gc2-float-arrow">→</div>
+                <div className="gc2-float-stat accent">
+                  <div className="gc2-float-n">98</div>
+                  <div className="gc2-float-l">יגיעו</div>
+                </div>
+                <div className="gc2-float-badge">67%</div>
+              </div>
+              <div className="gc2-float-bar">
+                <div className="gc2-float-bar-fill" style={{ width: '67%' }} />
+              </div>
+              <div className="gc2-float-sub">חיזוי מבוסס נתוני אירועים ישראליים</div>
             </div>
           </div>
+        </section>
 
-          {/* ── Results ── */}
-          {calculated && results && (
-            <div className="gc-results" ref={resultsRef}>
-              <div className="gc-results-header">
-                <h2 className="gc-results-title">תוצאות החישוב</h2>
-                <p className="gc-results-sub">
-                  על בסיס {results.total} מוזמנים, ממוצע ישראלי, ופרטי האירוע שלך
-                </p>
+        {/* ── Trust bar ── */}
+        <div className="gc2-trust-bar">
+          <div className="gc2-trust-inner">
+            {[
+              { icon: '📊', text: 'מבוסס על נתוני אלפי חתונות בישראל' },
+              { icon: '💰', text: 'עוזר לזוגות לחסוך אלפי שקלים באולם' },
+              { icon: '⚡', text: 'חיזוי חכם לפני סגירת מספר המנות' },
+            ].map((t, i) => (
+              <div key={i} className="gc2-trust-item">
+                <span className="gc2-trust-icon">{t.icon}</span>
+                <span>{t.text}</span>
               </div>
+            ))}
+          </div>
+        </div>
 
-              {/* Big attendance rate */}
-              <div className="gc-pct-ring-wrap">
-                <div className="gc-pct-ring">
-                  <svg viewBox="0 0 120 120" className="gc-ring-svg">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="oklch(0.92 0.04 60)" strokeWidth="8" />
-                    <circle
-                      cx="60" cy="60" r="52" fill="none"
-                      stroke="var(--coral)" strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(results.pct / 100) * 326.7} 326.7`}
-                      style={{ transform: 'rotate(-90deg)', transformOrigin: '60px 60px', transition: 'stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)' }}
-                    />
-                  </svg>
-                  <div className="gc-ring-label">
-                    <div className="gc-ring-pct">{results.pct}%</div>
-                    <div className="gc-ring-sub">יגיעו</div>
-                  </div>
-                </div>
-                <div className="gc-pct-context">
-                  <div className="gc-pct-title">אחוז הגעה משוער</div>
-                  <div className="gc-pct-desc">
-                    {results.pct >= 75 ? '🎉 מעל הממוצע! אירוע מצוין עם קהל מגובש.' :
-                     results.pct >= 60 ? '✅ אחוז הגעה ממוצע לחתונה ישראלית.' :
-                     '⚠️ אחוז נמוך — שקול להרחיב את רשימת ה-B list.'}
-                  </div>
-                  <div className="gc-pct-avg">ממוצע ישראלי: 65–72%</div>
-                </div>
-              </div>
+        {/* ── Calculator ── */}
+        <div className="gc2-calc-section" ref={calcRef}>
+          <div className="gc2-calc-container">
 
-              {/* Result cards grid */}
-              <div className="gc-result-cards">
-                <ResultCard label="סה״כ מוזמנים"       value={results.total}     delay={0}   />
-                <ResultCard label="צפויים להגיע"       value={results.attending}  delay={80}  accent />
-                <ResultCard label="צפויים לא להגיע"    value={results.declining}  delay={160} />
-                <ResultCard label="ביטולי יום האירוע"  value={results.noShows}   delay={240} sub="~9% מהמאשרים" />
-                <ResultCard label="יגיעו בפועל"         value={results.actual}    delay={320} accent />
-                <ResultCard label="מנות מומלצות לסגור" value={results.meals}     delay={400} big accent sub={`כולל רזרבה של ${results.buffer} מנות`} />
-              </div>
-
-              {/* Breakdown bar */}
-              <BreakdownBar breakdown={results.breakdown} total={results.attending} />
-
-              {/* Insight chips */}
-              <div className="gc-insights">
-                <div className="gc-insight-card">
-                  <div className="gc-insight-icon">💡</div>
-                  <div>
-                    <strong>טיפ:</strong> {results.buffer} מנות רזרבה זה {Math.round((results.buffer / results.meals) * 100)}% מהסגירה — המספר הנכון להמנע מחסר באוכל.
-                  </div>
+            {/* Step progress */}
+            <div className="gc2-steps">
+              {STEPS.map((s, i) => (
+                <div key={i} className={`gc2-step-item ${i === step ? 'active' : ''} ${i < step ? 'done' : ''}`}
+                     onClick={() => i < step && setStep(i)}>
+                  <div className="gc2-step-num">{i < step ? '✓' : i + 1}</div>
+                  <div className="gc2-step-label">{s}</div>
+                  {i < STEPS.length - 1 && <div className="gc2-step-line" />}
                 </div>
-                <div className="gc-insight-card">
-                  <div className="gc-insight-icon">📱</div>
-                  <div>
-                    <strong>חשוב:</strong> שלח תזכורת WhatsApp 48 שעות לפני האירוע — זה מוריד את אחוז ה-no-show ב-30%.
-                  </div>
-                </div>
-              </div>
-
-              {/* Lead gen CTA */}
-              <div className="gc-lead-cta">
-                <div className="gc-lead-cta-inner">
-                  <div className="gc-lead-cta-emoji">📋</div>
-                  <h3 className="gc-lead-title">רוצים לדעת בדיוק מי מגיע?</h3>
-                  <p className="gc-lead-sub">
-                    נהלו אישורי הגעה אמיתיים עם Choko — שלחו הזמנות WhatsApp,
-                    קבלו אישורים דיגיטליים, ועקבו אחרי כל אורח בזמן אמת.
-                  </p>
-                  <div className="gc-lead-btns">
-                    <button className="gc-lead-btn-primary" onClick={onLogin || (() => navigate({ page: 'login' }))}>
-                      התחל עכשיו — חינם
-                    </button>
-                    <button className="gc-lead-btn-secondary" onClick={onLogin || (() => navigate({ page: 'login' }))}>
-                      נהל מוזמנים →
-                    </button>
-                  </div>
-                  <div className="gc-lead-trust">✓ ללא כרטיס אשראי &nbsp;·&nbsp; ✓ בעברית &nbsp;·&nbsp; ✓ מוכן תוך דקה</div>
-                </div>
-              </div>
+              ))}
             </div>
-          )}
 
-          {/* ── SEO Article ── */}
-          <article className="gc-article">
-            <h2 className="gc-article-h2">כמה מוזמנים באמת מגיעים לחתונה בישראל?</h2>
-            <p className="gc-article-lead">
-              שאלת המיליון דולר של כל זוג מתחתן: אנחנו מזמינים 200 אנשים — כמה יגיעו?
-              הנה המדריך המלא, מבוסס על נתוני חתונות ישראליות.
-            </p>
+            <div className="gc2-calc-layout">
+              {/* Main form area */}
+              <div className="gc2-form-col">
 
-            <div className="gc-article-sections">
-
-              <div className="gc-article-section">
-                <h3>איך לחשב מוזמנים לחתונה?</h3>
-                <p>
-                  הנוסחה הפשוטה: חלקו את המוזמנים לקטגוריות וכפלו כל קטגוריה בשיעור ההגעה הממוצע שלה.
-                  משפחה קרובה? כ-93%. חברי עבודה? כ-40-50%. מוזמני ההורים? כ-70%.
-                </p>
-                <div className="gc-article-table">
-                  <div className="gc-table-row gc-table-header">
-                    <span>קטגוריה</span><span>אחוז הגעה ממוצע</span>
+                {/* Step 0 — Guest categories */}
+                {step === 0 && (
+                  <div className="gc2-step-body">
+                    <div className="gc2-step-header">
+                      <h2 className="gc2-step-title">כמה מוזמנים לפי קטגוריה?</h2>
+                      <p className="gc2-step-desc">כל קטגוריה מגיעה בשיעור שונה — הזיזו את הסליידר</p>
+                    </div>
+                    <div className="gc2-cat-list">
+                      {CATEGORIES.map(cat => (
+                        <GuestSlider key={cat.key} cat={cat} value={inputs[cat.key]} onChange={setField} />
+                      ))}
+                    </div>
+                    <div className="gc2-step-footer">
+                      <div className="gc2-total-pill">
+                        <span>סה״כ: <strong>{total}</strong> מוזמנים</span>
+                      </div>
+                      <button className="gc2-next-btn" onClick={() => setStep(1)}>
+                        המשך לפרטי האירוע ←
+                      </button>
+                    </div>
                   </div>
-                  {[
-                    ['משפחה קרובה', '90–95%'],
-                    ['משפחה רחוקה', '72–80%'],
-                    ['חברים קרובים', '65–75%'],
-                    ['מוזמני הורים', '68–75%'],
-                    ['קולגות / עבודה', '38–50%'],
-                    ['היכרויות כלליות', '40–55%'],
-                  ].map(([k, v]) => (
-                    <div key={k} className="gc-table-row">
-                      <span>{k}</span><span className="gc-table-pct">{v}</span>
+                )}
+
+                {/* Step 1 — Event details */}
+                {step === 1 && (
+                  <div className="gc2-step-body">
+                    <div className="gc2-step-header">
+                      <h2 className="gc2-step-title">פרטי האירוע</h2>
+                      <p className="gc2-step-desc">אזור ועונה משפיעים על אחוז ההגעה</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="gc-article-section">
-                <h3>למה אנשים לא מגיעים לחתונות?</h3>
-                <p>הסיבות הנפוצות ביותר לאי-הגעה לחתונות בישראל:</p>
-                <div className="gc-article-bullets">
-                  {[
-                    ['📍 מרחק גיאוגרפי', 'כל 50 ק"מ מוסיפים כ-4-6% ירידה בהגעה.'],
-                    ['📅 עיתוי', 'שישי צהריים? נוח יותר לכולם. שישי ערב בפסח? לא.'],
-                    ['🤝 עוצמת הקשר', 'מי שמכיר אתכם 3 שנים לא יסע 100 ק"מ.'],
-                    ['🗓️ שליחת הזמנות מאוחרת', 'שבועיים לפני = 10% פחות הגעה.'],
-                    ['☀️ חום קיצי', 'אוגוסט בישראל — חלק פשוט נוסעים לחו"ל.'],
-                  ].map(([icon, text]) => (
-                    <div key={icon} className="gc-article-bullet">
-                      <span className="gc-bullet-icon">{icon.split(' ')[0]}</span>
-                      <div><strong>{icon.substring(3)}</strong> — {text}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="gc-article-section">
-                <h3>כמה רזרבה מנות צריך לסגור עם האולם?</h3>
-                <p>
-                  הכלל המקובל בישראל: <strong>8–12% מעל</strong> מספר המאשרים הסופי.
-                  אם 180 אנשים אישרו — סגרו על 195–200 מנות. עדיף 10 מנות מיותרות מאשר
-                  אורח שיצא רעב.
-                </p>
-                <div className="gc-article-callout">
-                  <strong>💡 טיפ חשוב:</strong> קחו בחשבון שגם מבין המאשרים, ~9%
-                  לא יגיעו ביום האירוע עצמו (חולה, טיסה, ילד חולה). זה "no-show ישראלי"
-                  נורמלי לחלוטין.
-                </div>
-              </div>
-
-              <div className="gc-article-section">
-                <h3>מתי לבקש אישור הגעה?</h3>
-                <div className="gc-timeline">
-                  {[
-                    ['חודשיים לפני', 'שלחו הזמנה דיגיטלית ראשונה'],
-                    ['חודש לפני',    'תזכורת עדינה לכל מי שלא ענה'],
-                    ['שבועיים לפני', 'ספירה סופית — עצרו עדכוני רשימה'],
-                    ['שבוע לפני',    'אישרו מספר מנות סופי עם האולם'],
-                    ['יומיים לפני',  'WhatsApp אחרון: "מחכים לראותכם!"'],
-                  ].map(([time, action], i) => (
-                    <div key={i} className="gc-timeline-item">
-                      <div className="gc-timeline-dot" />
-                      <div className="gc-timeline-content">
-                        <strong>{time}</strong>
-                        <span>{action}</span>
+                    <div className="gc2-option-section">
+                      <div className="gc2-option-label">🗺️ אזור בארץ</div>
+                      <div className="gc2-seg-grid gc2-seg-grid--5">
+                        {REGIONS.map(opt => (
+                          <SegCard key={opt.value} opt={opt} active={inputs.region === opt.value} onClick={() => setField('region', opt.value)} />
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="gc2-option-section">
+                      <div className="gc2-option-label">📅 סוג / עונת האירוע</div>
+                      <div className="gc2-seg-grid gc2-seg-grid--4">
+                        {SEASONS.map(opt => (
+                          <SegCard key={opt.value} opt={opt} active={inputs.season === opt.value} onClick={() => setField('season', opt.value)} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="gc2-step-footer">
+                      <button className="gc2-back-btn" onClick={() => setStep(0)}>← חזרה</button>
+                      <button className="gc2-next-btn" onClick={() => setStep(2)}>המשך לרמת קשר ←</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2 — Relationship */}
+                {step === 2 && (
+                  <div className="gc2-step-body">
+                    <div className="gc2-step-header">
+                      <h2 className="gc2-step-title">רמת קשר ותזמון</h2>
+                      <p className="gc2-step-desc">שני גורמים שמשפיעים מאד על שיעור ההגעה</p>
+                    </div>
+                    <div className="gc2-option-section">
+                      <div className="gc2-option-label">📬 כמה זמן מראש שולחים הזמנות?</div>
+                      <div className="gc2-chips-row">
+                        {NOTICE_OPTIONS.map(opt => (
+                          <Chip key={opt.value} opt={opt} active={inputs.notice === opt.value} onClick={() => setField('notice', opt.value)} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="gc2-option-section">
+                      <div className="gc2-option-label">🤝 רמת קשר ממוצעת עם המוזמנים</div>
+                      <div className="gc2-chips-row">
+                        {REL_OPTIONS.map(opt => (
+                          <Chip key={opt.value} opt={opt} active={inputs.relationship === opt.value} onClick={() => setField('relationship', opt.value)} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="gc2-modifiers-explain">
+                      <div className="gc2-mod-title">השפעה על אחוז ההגעה:</div>
+                      <div className="gc2-mod-chips">
+                        {[
+                          `אזור: ${REGION_MOD[inputs.region] >= 0 ? '+' : ''}${Math.round(REGION_MOD[inputs.region] * 100)}%`,
+                          `עונה: ${SEASON_MOD[inputs.season] >= 0 ? '+' : ''}${Math.round(SEASON_MOD[inputs.season] * 100)}%`,
+                          `תזמון: ${NOTICE_MOD[inputs.notice] >= 0 ? '+' : ''}${Math.round(NOTICE_MOD[inputs.notice] * 100)}%`,
+                          `קשר: ${REL_MOD[inputs.relationship] >= 0 ? '+' : ''}${Math.round(REL_MOD[inputs.relationship] * 100)}%`,
+                        ].map(t => <span key={t} className="gc2-mod-chip">{t}</span>)}
+                      </div>
+                    </div>
+                    <div className="gc2-step-footer">
+                      <button className="gc2-back-btn" onClick={() => setStep(1)}>← חזרה</button>
+                      <button className="gc2-calc-btn" onClick={() => setStep(3)}>
+                        ← חשב תוצאות
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3 — Results */}
+                {step === 3 && (
+                  <div className="gc2-step-body">
+                    <ResultsView results={results} onLogin={doLogin} />
+                    <div className="gc2-step-footer" style={{ marginTop: 24 }}>
+                      <button className="gc2-back-btn" onClick={() => setStep(2)}>← ערוך נתונים</button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="gc-article-section">
-                <h3>איך Choko עוזר לנהל מוזמנים?</h3>
-                <p>
-                  Choko היא מערכת ניהול מוזמנים ישראלית שמאפשרת לשלוח הזמנות WhatsApp,
-                  לקבל אישורי הגעה דיגיטליים, ולראות בזמן אמת כמה אנשים מגיעים.
-                </p>
-                <div className="gc-feature-chips">
-                  {['✅ שליחת הזמנות WhatsApp', '📊 מעקב אישורים בזמן אמת', '🎨 הזמנות מעוצבות', '📥 ייבוא מאקסל', '📱 מותאם לנייד', '🔔 תזכורות אוטומטיות'].map(f => (
-                    <span key={f} className="gc-feature-chip">{f}</span>
-                  ))}
-                </div>
+              {/* Live panel */}
+              <div className="gc2-panel-col">
+                <LivePanel results={results} total={total} visible={step < 3} />
               </div>
-
             </div>
-          </article>
-
-          {/* Bottom CTA */}
-          <div className="gc-bottom-cta">
-            <h2>מוכנים לנהל את המוזמנים בצורה חכמה?</h2>
-            <p>הצטרפו ל-50,000+ זוגות שכבר ניהלו את האירוע שלהם עם Choko</p>
-            <button className="gc-calc-btn" onClick={onLogin || (() => navigate({ page: 'login' }))}>
-              התחל חינם ←
-            </button>
           </div>
+        </div>
 
+        {/* ── Content sections ── */}
+        <div className="gc2-content-section">
+          <div className="gc2-content-container">
+
+            <div className="gc2-content-grid">
+              {[
+                {
+                  icon: '📋', title: 'איך זה עובד?',
+                  body: 'הזינו כמות מוזמנים לפי קטגוריה (משפחה, חברים, קולגות), בחרו אזור, עונה ורמת קשר — המחשבון מחשב שיעורי הגעה ריאליים ומחזיר לכם מספר מנות מומלץ.'
+                },
+                {
+                  icon: '🤔', title: 'למה אנשים לא מגיעים?',
+                  body: 'שלושת הגורמים העיקריים: מרחק גיאוגרפי (כל 50 ק"מ = 4-6% ירידה), תזמון מאוחר של ההזמנה, ועוצמת הקשר עם הזוג. קולגות עם קשר לא אישי מגיעים פחות מ-50%.'
+                },
+                {
+                  icon: '💰', title: 'איך לחסוך אלפי שקלים?',
+                  body: 'כל מנה עולה 200-400₪. זוגות שמזמינים 250 ואמורים לקבל 160 — וסוגרים על 250 מנות — מפסידים 18,000-36,000₪ מיותר. מחשבון חכם חוסך בממוצע 15,000₪.'
+                },
+                {
+                  icon: '⏰', title: 'מתי לבקש אישור הגעה?',
+                  body: 'שלחו הזמנה חודש וחצי לפני, תזכורת שבועיים לפני, וסגרו רשימה שבוע לפני האירוע. אישורי הגעה דיגיטליים עם Choko מקלים על כל התהליך.'
+                },
+              ].map((c, i) => (
+                <div key={i} className="gc2-content-card">
+                  <div className="gc2-content-icon">{c.icon}</div>
+                  <h3 className="gc2-content-title">{c.title}</h3>
+                  <p className="gc2-content-body">{c.body}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* FAQ */}
+            <div className="gc2-faq-section">
+              <h2 className="gc2-faq-title">שאלות נפוצות</h2>
+              <div className="gc2-faq-list">
+                {FAQ_ITEMS.map((item, i) => <FAQItem key={i} item={item} />)}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Bottom CTA ── */}
+        <div className="gc2-bottom-cta">
+          <div className="gc2-bottom-cta-inner">
+            <div className="gc2-bottom-icon">💍</div>
+            <h2 className="gc2-bottom-title">מוכנים לנהל אישורי הגעה בצורה חכמה?</h2>
+            <p className="gc2-bottom-desc">הצטרפו ל-50,000+ זוגות שכבר ניהלו את האירוע שלהם עם Choko</p>
+            <button className="gc2-hero-cta-primary" onClick={doLogin}>התחל חינם ←</button>
+            <div className="gc2-bottom-trust">✓ חינם לחלוטין &nbsp;·&nbsp; ✓ ללא כרטיס אשראי &nbsp;·&nbsp; ✓ בעברית</div>
+          </div>
         </div>
 
         {/* Footer */}
-        <footer className="gc-footer">
-          <div className="gc-footer-inner">
-            <span className="gc-logo" style={{ cursor: 'default' }}>choko<span className="gc-logo-dot" /></span>
-            <span className="gc-footer-copy">© 2026 כל הזכויות שמורות</span>
-          </div>
+        <footer className="gc2-footer">
+          <button className="gc2-logo" style={{ cursor: 'default' }} onClick={() => {}}>
+            choko<span className="gc2-logo-dot" />
+          </button>
+          <span className="gc2-footer-copy">© 2026 כל הזכויות שמורות</span>
         </footer>
 
       </div>
