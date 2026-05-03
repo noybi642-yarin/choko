@@ -10,6 +10,7 @@ import EventDetail from './pages/EventDetail';
 import GuestRSVP from './pages/GuestRSVP';
 import AIAssistant from './pages/AIAssistant';
 import InviteDesign from './pages/InviteDesign';
+import WhatsAppScheduler from './pages/WhatsAppScheduler';
 
 initStore();
 
@@ -120,6 +121,9 @@ export default function App() {
         )}
         {route.page === 'invite-design' && (
           <InviteDesign eventId={route.eventId} navigate={navigate} />
+        )}
+        {route.page === 'whatsapp-scheduler' && (
+          <WhatsAppScheduler eventId={route.eventId} navigate={navigate} />
         )}
       </main>
     </div>

@@ -95,6 +95,90 @@ export function updateEvent(id, updates) {
   });
 }
 
+// ── Message Templates ──────────────────────────────────────────────────────
+
+export const MESSAGE_TEMPLATES = [
+  {
+    id: 'tpl-invite',
+    name: 'הזמנה ראשונה',
+    category: 'invitation',
+    emoji: '💍',
+    message: 'היי {{firstName}} 💍\n\nאנחנו שמחים להזמין אותך לחתונה שלנו!\n\n📅 {{eventDate}}\n📍 {{venueName}}\n\nאשר/י הגעה כאן:\n{{rsvpLink}}\n\nמחכים לחגוג איתך,\n{{coupleNames}}',
+  },
+  {
+    id: 'tpl-reminder-soft',
+    name: 'תזכורת עדינה',
+    category: 'reminder',
+    emoji: '🔔',
+    message: 'היי {{firstName}},\n\nרק רצינו להזכיר – האירוע שלנו מתקרב! 😊\n\nעדיין לא אישרת/ת הגעה?\nנשמח לדעת:\n{{rsvpLink}}\n\nתודה,\n{{coupleNames}}',
+  },
+  {
+    id: 'tpl-reminder-last',
+    name: 'תזכורת אחרונה',
+    category: 'reminder',
+    emoji: '⏰',
+    message: 'היי {{firstName}},\n\nנותרו עוד כמה ימים! 🎉\n\nזו ההזדמנות האחרונה לאשר הגעה:\n{{rsvpLink}}\n\nמחכים לראותך!\n{{coupleNames}}',
+  },
+  {
+    id: 'tpl-day-of',
+    name: 'הודעת יום האירוע',
+    category: 'day-of',
+    emoji: '🎊',
+    message: 'היי {{firstName}} 🎊\n\nהיום זה קורה! מחכים לראותך הערב.\n\n📍 {{venueName}}\n\nנתראה!\n{{coupleNames}}',
+  },
+  {
+    id: 'tpl-thank-you',
+    name: 'הודעת תודה אחרי אישור',
+    category: 'thank-you',
+    emoji: '🙏',
+    message: 'היי {{firstName}} 🙏\n\nתודה שאישרת/ת הגעה!\nאנחנו כל כך שמחים שתגיע/י.\n\nנתראה ב{{eventDate}} ב{{venueName}}!\n\nאוהבים,\n{{coupleNames}}',
+  },
+];
+
+// ── Campaigns ─────────────────────────────────────────────────────────────
+
+export function getCampaigns(eventId) {
+  return (getStore().campaigns || []).filter(c => c.eventId === eventId);
+}
+
+export function createCampaign(data) {
+  const s = getStore();
+  const campaign = {
+    ...data,
+    id: 'camp-' + Date.now(),
+    status: 'scheduled',
+    stats: { total: 0, sent: 0, delivered: 0, replied: 0, converted: 0, failed: 0 },
+    createdAt: Date.now(),
+  };
+  setStore({ ...s, campaigns: [...(s.campaigns || []), campaign] });
+  return campaign;
+}
+
+export function updateCampaign(id, updates) {
+  const s = getStore();
+  setStore({
+    ...s,
+    campaigns: (s.campaigns || []).map(c => c.id === id ? { ...c, ...updates } : c),
+  });
+}
+
+export function deleteCampaign(id) {
+  const s = getStore();
+  setStore({ ...s, campaigns: (s.campaigns || []).filter(c => c.id !== id) });
+}
+
+export function mockSendCampaign(id, guestCount) {
+  const s = getStore();
+  setStore({
+    ...s,
+    campaigns: (s.campaigns || []).map(c =>
+      c.id === id
+        ? { ...c, status: 'sent', sentAt: Date.now(), stats: { total: guestCount, sent: guestCount, delivered: Math.round(guestCount * 0.97), replied: Math.round(guestCount * 0.62), converted: Math.round(guestCount * 0.54), failed: Math.round(guestCount * 0.03) } }
+        : c
+    ),
+  });
+}
+
 export function deleteEvent(id) {
   const s = getStore();
   setStore({
