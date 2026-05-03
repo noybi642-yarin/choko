@@ -1,19 +1,33 @@
+import { useEffect, useRef } from 'react';
 import PhoneRSVP from './PhoneRSVP';
 import { Steps, Features, AppBanner, Pricing, FooterCTA } from './Sections';
+import { RainbowBorderButton } from './components/ui/RainbowBorderButton';
 
 function Nav({ onLogin }) {
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const onScroll = () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <nav className="nav">
-      <div className="nav-inner">
-        <span className="logo" style={{cursor:'default'}}>choko<span className="logo-dot"></span></span>
-        <div className="nav-links">
+    <nav className="lp-nav" ref={navRef}>
+      <div className="lp-nav-inner">
+        <span className="lp-logo">choko<span className="lp-logo-dot" /></span>
+        <div className="lp-nav-links">
           <a href="#how">איך זה עובד</a>
           <a href="#features">תכונות</a>
           <a href="#pricing">תמחור</a>
         </div>
-        <div className="nav-cta">
-          <button className="btn btn-ghost"   onClick={onLogin}>כניסה</button>
-          <button className="btn btn-primary" onClick={onLogin}>יצירת אירוע</button>
+        <div className="lp-nav-end">
+          <button className="lp-nav-btn lp-nav-btn--ghost" onClick={onLogin}>כניסה</button>
+          <RainbowBorderButton onClick={onLogin}>יצירת אירוע</RainbowBorderButton>
         </div>
       </div>
     </nav>
@@ -21,57 +35,120 @@ function Nav({ onLogin }) {
 }
 
 export default function Landing({ onLogin, onAI }) {
+  const copyRef = useRef(null);
+  const stageRef = useRef(null);
+
+  useEffect(() => {
+    const els = [copyRef.current, stageRef.current].filter(Boolean);
+    if (!els.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
+      { threshold: 0.15 }
+    );
+    els.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <Nav onLogin={onLogin} />
 
-      {/* Hero */}
-      <section className="hero" data-variant="b">
-        <div className="container hero-grid">
-          <div className="hero-text">
-            <div className="hero-eyebrow">
-              <span className="pill"><span className="pill-dot"></span> חדש: שיבוץ שולחנות בקליק</span>
+      <section className="lp-hero">
+        {/* Background orbs */}
+        <div className="lp-orb lp-orb--coral" />
+        <div className="lp-orb lp-orb--lavender" />
+        <div className="lp-orb lp-orb--gold" />
+        <div className="lp-hero-grid" />
+
+        <div className="lp-hero-inner">
+          {/* Copy column */}
+          <div className="lp-hero-copy" ref={copyRef}>
+            <div className="lp-eyebrow">
+              <span className="lp-eyebrow-dot" />
+              חדש: שיבוץ שולחנות בקליק
             </div>
-            <h1>
-              אישורי הגעה<br />
-              <span className="scribble"><span className="accent">בלי כאב ראש</span></span>
+
+            <h1 className="lp-h1">
+              אישורי הגעה
+              <span className="lp-h1-line2">בלי כאב ראש</span>
             </h1>
-            <p className="sub">
-              choko היא הדרך הכי קלה ויפה לנהל את רשימת האורחים לחתונה, לבר מצווה או למסיבה.
-              אתם שולחים — האורחים מאשרים. כולם מרוצים.
+
+            <p className="lp-hero-sub">
+              choko היא הדרך הכי קלה ויפה לנהל את רשימת האורחים לחתונה,
+              לבר מצווה או למסיבה. אתם שולחים — האורחים מאשרים. כולם מרוצים.
             </p>
-            <div className="hero-ctas">
-              <button className="btn btn-coral" onClick={onLogin}>יצירת הזמנה — חינם</button>
-              <button className="btn btn-ai" onClick={onAI}>✨ חברי הטוב AI</button>
-              <a href="#how" className="btn btn-ghost">איך זה עובד?</a>
+
+            <div className="lp-ctas">
+              <RainbowBorderButton onClick={onLogin} className="lp-btn-coral-size">
+                יצירת הזמנה — חינם
+              </RainbowBorderButton>
+              <button className="lp-btn-outline" onClick={onAI}>
+                ✨ חברי הטוב AI
+              </button>
+              <a href="#how" className="lp-btn-outline">איך זה עובד?</a>
             </div>
-            <div className="hero-meta">
-              <div className="avatars">
-                <span className="avatar">נ</span>
-                <span className="avatar">ד</span>
-                <span className="avatar">ר</span>
-                <span className="avatar">+</span>
+
+            <div className="lp-trust">
+              <div className="lp-avs">
+                <span className="lp-av">נ</span>
+                <span className="lp-av">ד</span>
+                <span className="lp-av">ר</span>
+                <span className="lp-av">+</span>
               </div>
-              <div className="hero-meta-item">
-                <span style={{ color: 'var(--coral)' }}>★★★★★</span>
-                <span>למעלה מ-50,000 אירועים מאושרים</span>
+              <div className="lp-trust-text">
+                <span className="lp-stars">★★★★★</span>
+                {' '}
+                <strong>למעלה מ-50,000</strong> אירועים מאושרים
               </div>
             </div>
           </div>
 
-          <div className="hero-stage">
-            <div className="invite-card" style={{ top: '8%', right: '-5%', transform: 'rotate(8deg)' }}>
-              <div className="invite-card-mini" style={{ background: 'linear-gradient(135deg, var(--sun), var(--coral))' }}></div>
-              <div className="t">יום הולדת 30</div>
-              <div className="s">22 יוני · 21:00</div>
+          {/* Stage column */}
+          <div className="lp-hero-stage" ref={stageRef}>
+            <div className="lp-phone-glow" />
+
+            {/* Floating card A — new RSVP */}
+            <div className="lp-float lp-float--a">
+              <div className="lp-float-row">
+                <div className="lp-float-icon" style={{ background: 'oklch(0.52 0.16 155 / 0.25)' }}>✅</div>
+                <div>
+                  <div className="lp-float-title">דנה כהן אישרה הגעה</div>
+                  <div className="lp-float-sub">2 אורחים · הרגע</div>
+                </div>
+              </div>
             </div>
-            <div className="invite-card" style={{ bottom: '5%', left: '-8%', transform: 'rotate(-6deg)' }}>
-              <div className="invite-card-mini" style={{ background: 'linear-gradient(135deg, var(--mint), var(--lavender))' }}></div>
-              <div className="t">בר מצווה</div>
-              <div className="s">8 ספטמבר · גליקסון</div>
+
+            {/* Floating card B — event type */}
+            <div className="lp-float lp-float--b">
+              <div className="lp-float-row">
+                <div className="lp-float-icon" style={{ background: 'oklch(0.65 0.22 28 / 0.25)' }}>💍</div>
+                <div>
+                  <div className="lp-float-title">חתונת דנה ויוסי</div>
+                  <div className="lp-float-sub">22 ביוני · 143 מוזמנים</div>
+                </div>
+              </div>
             </div>
+
+            {/* Floating card C — live count */}
+            <div className="lp-float lp-float--c">
+              <div className="lp-float-row">
+                <div className="lp-live-dot" />
+                <div>
+                  <div className="lp-float-title">87% אישרו הגעה</div>
+                  <div className="lp-float-sub">עדכון חי</div>
+                </div>
+              </div>
+            </div>
+
             <PhoneRSVP eventType="wedding" />
           </div>
+        </div>
+
+        <div className="lp-scroll-cue">
+          <span>גלול למטה</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M3 9l5 4 5-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
       </section>
 
