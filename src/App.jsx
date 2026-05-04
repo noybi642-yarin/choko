@@ -12,6 +12,7 @@ import AIAssistant from './pages/AIAssistant';
 import InviteDesign from './pages/InviteDesign';
 import WhatsAppScheduler from './pages/WhatsAppScheduler';
 import GuestCalculator from './pages/GuestCalculator';
+import SeatingPlan from './pages/SeatingPlan';
 
 initStore();
 
@@ -37,6 +38,10 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
           className={`sidebar-link ${currentPage === 'ai-assistant' ? 'active' : ''}`}
           onClick={() => navigate({ page: 'ai-assistant' })}
         >✨ חברי הטוב AI</button>
+        <button
+          className={`sidebar-link ${currentPage === 'seating-plan' ? 'active' : ''}`}
+          onClick={() => navigate({ page: 'seating-plan', eventId: 'evt-demo' })}
+        >🪑 הושבת מוזמנים</button>
       </nav>
       <div className="sidebar-bottom">
         <div className="sidebar-user">
@@ -133,6 +138,9 @@ export default function App() {
         )}
         {route.page === 'whatsapp-scheduler' && (
           <WhatsAppScheduler eventId={route.eventId} navigate={navigate} />
+        )}
+        {route.page === 'seating-plan' && (
+          <SeatingPlan eventId={route.eventId} navigate={navigate} />
         )}
       </main>
     </div>
