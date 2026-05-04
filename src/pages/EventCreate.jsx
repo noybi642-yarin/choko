@@ -49,7 +49,11 @@ export default function EventCreate({ user, navigate }) {
   };
 
   return (
-    <div className="page-content">
+    <div className="page-content aurora-page">
+      <div className="aurora-bg" aria-hidden="true">
+        <div className="aurora-layer" />
+        <div className="aurora-layer-2" />
+      </div>
       <div className="page-header">
         <div>
           <button className="back-btn" onClick={() => navigate({ page: 'dashboard' })}>← חזרה</button>

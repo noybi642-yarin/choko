@@ -381,8 +381,9 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
   return (
     <div className="sp-page" dir="rtl">
       {/* ── Aurora background ── */}
-      <div className="sp-aurora-bg" aria-hidden="true">
-        <div className="sp-aurora-layer" />
+      <div className="aurora-bg" aria-hidden="true">
+        <div className="aurora-layer" />
+        <div className="aurora-layer-2" />
       </div>
 
       {/* ── Toast ── */}

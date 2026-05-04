@@ -94,6 +94,8 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 40px 32px;
+  position: relative; /* needed so aurora-bg positions inside */
+  min-height: 100%;
 }
 
 .page-header {
@@ -1893,7 +1895,7 @@
   padding-bottom: 48px;
   overflow: hidden;
 }
-.sp-page > *:not(.sp-aurora-bg) { position: relative; z-index: 1; }
+.sp-page > *:not(.aurora-bg) { position: relative; z-index: 1; }
 
 /* ── Toast ── */
 .sp-toast {
@@ -2310,4 +2312,67 @@
   .sp-kpi-val  { font-size: 20px; }
   .sp-kpi-lbl  { font-size: 10px; }
   .sp-panel-l { flex-direction: column; }
+}
+
+
+/* ===== Shared Aurora Background (.aurora-*) ===== */
+/* Used by: Dashboard, EventCreate, SeatingPlan */
+
+@keyframes aurora-move {
+  from { background-position: 50% 50%, 50% 50%; }
+  to   { background-position: 350% 50%, 350% 50%; }
+}
+
+/* Wrapper: make the page a positioned container so the aurora stays inside */
+.aurora-page {
+  position: relative;
+  overflow: hidden;
+}
+.aurora-page > *:not(.aurora-bg) { position: relative; z-index: 1; }
+
+.aurora-bg {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+
+/* Layer 1 — large soft radial bloom (top-right) */
+.aurora-layer {
+  position: absolute; inset: -10px;
+  opacity: 0.40; filter: blur(15px);
+  background-image:
+    repeating-linear-gradient(100deg,
+      rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.92) 7%,
+      transparent 10%, transparent 12%,
+      rgba(255,255,255,0.92) 16%),
+    repeating-linear-gradient(100deg,
+      oklch(0.72 0.09 85)  10%,
+      oklch(0.85 0.08 70)  15%,
+      oklch(0.93 0.04 90)  20%,
+      oklch(0.89 0.05 30)  25%,
+      oklch(0.78 0.07 80)  30%);
+  background-size: 300% 200%;
+  animation: aurora-move 60s linear infinite;
+  mask-image: radial-gradient(ellipse at 82% 0%, black 8%, transparent 60%);
+  -webkit-mask-image: radial-gradient(ellipse at 82% 0%, black 8%, transparent 60%);
+}
+
+/* Layer 2 — subtle warm bloom (bottom-left), offset phase */
+.aurora-layer-2 {
+  position: absolute; inset: -10px;
+  opacity: 0.22; filter: blur(20px);
+  background-image:
+    repeating-linear-gradient(100deg,
+      rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.8) 7%,
+      transparent 10%, transparent 12%,
+      rgba(255,255,255,0.8) 16%),
+    repeating-linear-gradient(100deg,
+      oklch(0.80 0.06 30)  10%,
+      oklch(0.88 0.04 60)  15%,
+      oklch(0.94 0.03 85)  20%,
+      oklch(0.87 0.05 50)  25%,
+      oklch(0.76 0.07 40)  30%);
+  background-size: 280% 180%;
+  animation: aurora-move 80s linear infinite reverse;
+  mask-image: radial-gradient(ellipse at 15% 95%, black 8%, transparent 55%);
+  -webkit-mask-image: radial-gradient(ellipse at 15% 95%, black 8%, transparent 55%);
 }
