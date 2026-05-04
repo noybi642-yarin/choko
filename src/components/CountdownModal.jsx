@@ -95,8 +95,8 @@ export default function CountdownModal({ date, eventTitle, onClose }) {
           <p className="cd-past-msg">🎉 האירוע כבר קרה — מזל טוב!</p>
         ) : (
           <>
-            {/* Countdown */}
-            <div className="cd-units">
+            {/* Countdown — always LTR so days sit on the left */}
+            <div className="cd-units" dir="ltr">
               <TimeUnit value={time.days}    label="ימים" />
               <span className="cd-colon">:</span>
               <TimeUnit value={time.hours}   label="שעות" />

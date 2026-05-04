@@ -35,16 +35,7 @@ export default function EventCreate({ user, navigate }) {
 
   const [saving, setSaving] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
-
-  const handleDateChange = (e) => {
-    setDate(e.target.value);
-    if (e.target.value) {
-      // Brief delay so the input value is visually committed first
-      setTimeout(() => setShowCountdown(true), 350);
-    } else {
-      setShowCountdown(false);
-    }
-  };
+  const [createdEventId, setCreatedEventId] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -56,8 +47,15 @@ export default function EventCreate({ user, navigate }) {
         groomsParents, bridesParents,
         honoree,
       }, user.email);
-      navigate({ page: 'event-detail', eventId: ev.id });
+      setCreatedEventId(ev.id);
+      setSaving(false);
+      setShowCountdown(true);
     }, 400);
+  };
+
+  const handleCountdownClose = () => {
+    setShowCountdown(false);
+    navigate({ page: 'event-detail', eventId: createdEventId });
   };
 
   return (
@@ -143,7 +141,7 @@ export default function EventCreate({ user, navigate }) {
           {/* Date & time */}
           <div className="fields-row">
             <Field label="תאריך">
-              <input type="date" value={date} onChange={handleDateChange} required />
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
             </Field>
             {type === 'wedding' ? (
               <>
@@ -194,7 +192,7 @@ export default function EventCreate({ user, navigate }) {
         <CountdownModal
           date={date}
           eventTitle={title}
-          onClose={() => setShowCountdown(false)}
+          onClose={handleCountdownClose}
         />
       )}
     </div>
