@@ -380,12 +380,6 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
   // ── Render ──
   return (
     <div className="sp-page" dir="rtl">
-      {/* ── Aurora background ── */}
-      <div className="aurora-bg" aria-hidden="true">
-        <div className="aurora-layer" />
-        <div className="aurora-layer-2" />
-      </div>
-
       {/* ── Toast ── */}
       {toast && <div className={`sp-toast sp-toast--${toast.type}`}>{toast.msg}</div>}
 
