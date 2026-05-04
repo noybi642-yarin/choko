@@ -2387,3 +2387,200 @@
   mask-image: radial-gradient(ellipse at 18% 98%, black 5%, transparent 58%);
   -webkit-mask-image: radial-gradient(ellipse at 18% 98%, black 5%, transparent 58%);
 }
+
+
+/* ===== Countdown Modal (cd-*) ===== */
+
+/* ── Digit flip animation ── */
+@keyframes cd-flip-in {
+  0%   { opacity: 0; transform: translateY(40%) scaleY(0.7); }
+  60%  { opacity: 1; transform: translateY(-6%) scaleY(1.05); }
+  100% { opacity: 1; transform: translateY(0)   scaleY(1); }
+}
+
+/* ── Overlay ── */
+.cd-overlay {
+  position: fixed; inset: 0;
+  z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(20, 15, 10, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: cd-overlay-in 0.25s ease;
+}
+@keyframes cd-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal card ── */
+.cd-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 252, 248, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid oklch(0.88 0.04 85);
+  border-radius: 28px;
+  padding: 44px 40px 36px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  text-align: center;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.6) inset,
+    0 32px 80px rgba(140, 100, 20, 0.18),
+    0 8px 24px rgba(0,0,0,0.12);
+  overflow: hidden;
+  animation: cd-modal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  direction: rtl;
+}
+@keyframes cd-modal-in {
+  from { opacity: 0; transform: scale(0.88) translateY(24px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* ── Glow blobs ── */
+.cd-glow {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; z-index: 0;
+  filter: blur(40px);
+}
+.cd-glow-1 {
+  width: 280px; height: 200px;
+  background: oklch(0.82 0.12 80 / 0.35);
+  top: -60px; right: -60px;
+}
+.cd-glow-2 {
+  width: 220px; height: 180px;
+  background: oklch(0.78 0.08 35 / 0.22);
+  bottom: -50px; left: -50px;
+}
+.cd-modal > *:not(.cd-glow) { position: relative; z-index: 1; }
+
+/* ── Close button ── */
+.cd-close {
+  position: absolute; top: 16px; left: 16px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: oklch(0.93 0.02 85); border: 1px solid oklch(0.88 0.03 85);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: oklch(0.5 0.02 260);
+  transition: all 0.15s;
+  z-index: 2;
+}
+.cd-close:hover { background: oklch(0.88 0.04 85); color: oklch(0.25 0.02 260); }
+
+/* ── Badge ── */
+.cd-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 100px;
+  background: oklch(0.92 0.05 85); border: 1px solid oklch(0.85 0.06 82);
+  font-size: 12px; font-weight: 700; color: oklch(0.52 0.09 78);
+  letter-spacing: 0.3px;
+}
+
+/* ── Title ── */
+.cd-title {
+  font-size: 26px; font-weight: 900; color: oklch(0.18 0.02 260);
+  margin: 0; line-height: 1.2; letter-spacing: -0.5px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.cd-heart { color: oklch(0.62 0.18 25); flex-shrink: 0; }
+
+/* ── Date row ── */
+.cd-date-row {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 600; color: oklch(0.55 0.03 260);
+  background: oklch(0.96 0.02 85);
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid oklch(0.90 0.03 85);
+}
+
+/* ── Units row ── */
+.cd-units {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 4px 0;
+}
+.cd-colon {
+  font-size: 36px; font-weight: 200;
+  color: oklch(0.65 0.04 85);
+  padding-bottom: 20px;
+  line-height: 1;
+  align-self: center;
+  margin-bottom: 20px;
+}
+
+/* ── Single unit ── */
+.cd-unit {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.cd-unit-box {
+  min-width: 76px; padding: 14px 10px;
+  background: oklch(0.97 0.02 85);
+  border: 1.5px solid oklch(0.88 0.05 82);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 12px oklch(0.72 0.09 85 / 0.12), 0 1px 0 white inset;
+  overflow: hidden;
+  position: relative;
+}
+/* shimmer line at top */
+.cd-unit-box::before {
+  content: '';
+  position: absolute; top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+}
+
+/* ── Animated digit ── */
+.cd-digit {
+  display: block;
+  font-family: 'Heebo', 'Assistant', monospace;
+  font-size: 40px; font-weight: 900;
+  color: oklch(0.20 0.02 260);
+  line-height: 1; letter-spacing: -2px;
+  animation: cd-flip-in 0.32s cubic-bezier(0.34, 1.4, 0.64, 1);
+  will-change: transform, opacity;
+}
+
+.cd-unit-label {
+  font-size: 11px; font-weight: 700;
+  color: oklch(0.60 0.04 82);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+/* ── Sub text ── */
+.cd-sub {
+  font-size: 14px; color: oklch(0.58 0.03 260);
+  margin: -4px 0; font-weight: 500;
+}
+.cd-past-msg {
+  font-size: 20px; font-weight: 800; color: oklch(0.22 0.02 260);
+  margin: 8px 0;
+}
+
+/* ── Dismiss button ── */
+.cd-btn {
+  margin-top: 4px; padding: 12px 32px; border-radius: 100px;
+  background: linear-gradient(135deg, oklch(0.72 0.09 85), oklch(0.60 0.12 72));
+  color: white; font-size: 14px; font-weight: 700;
+  border: none; cursor: pointer; width: 100%;
+  box-shadow: 0 4px 18px oklch(0.72 0.09 85 / 0.38);
+  transition: all 0.2s ease;
+}
+.cd-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px oklch(0.72 0.09 85 / 0.50);
+}
+.cd-btn:active { transform: translateY(0); }
+
+/* ── Mobile ── */
+@media (max-width: 520px) {
+  .cd-modal { padding: 36px 22px 28px; border-radius: 22px; }
+  .cd-digit { font-size: 32px; }
+  .cd-unit-box { min-width: 60px; padding: 12px 8px; }
+  .cd-title { font-size: 21px; }
+  .cd-colon { font-size: 28px; }
+}
