@@ -65,11 +65,7 @@ export default function Dashboard({ user, navigate }) {
   };
 
   return (
-    <div className="page-content aurora-page">
-      <div className="aurora-bg" aria-hidden="true">
-        <div className="aurora-layer" />
-        <div className="aurora-layer-2" />
-      </div>
+    <div className="page-content">
       <div className="page-header">
         <div>
           <h1 className="page-title">שלום, {user.name} 👋</h1>

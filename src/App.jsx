@@ -119,6 +119,11 @@ export default function App() {
   // ── Logged-in app shell ─────────────────────────────────────────────────────
   return (
     <div className="app-shell">
+      {/* Aurora — position:fixed so it truly covers the full viewport */}
+      <div className="aurora-fixed" aria-hidden="true">
+        <div className="aurora-layer" />
+        <div className="aurora-layer-2" />
+      </div>
       <AppSidebar user={user} currentPage={route.page} navigate={navigate} onLogout={handleLogout} />
       <main className="app-main">
         {route.page === 'dashboard' && (
