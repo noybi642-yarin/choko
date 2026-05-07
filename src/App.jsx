@@ -13,6 +13,7 @@ import InviteDesign from './pages/InviteDesign';
 import WhatsAppScheduler from './pages/WhatsAppScheduler';
 import GuestCalculator from './pages/GuestCalculator';
 import SeatingPlan from './pages/SeatingPlan';
+import VenueCanvas from './pages/VenueCanvas';
 
 initStore();
 
@@ -42,6 +43,10 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
           className={`sidebar-link ${currentPage === 'seating-plan' ? 'active' : ''}`}
           onClick={() => navigate({ page: 'seating-plan', eventId: 'evt-demo' })}
         >🪑 הושבת מוזמנים</button>
+        <button
+          className={`sidebar-link ${currentPage === 'venue-canvas' ? 'active' : ''}`}
+          onClick={() => navigate({ page: 'venue-canvas', eventId: 'evt-demo' })}
+        >🏛️ תוכנית אולם</button>
       </nav>
       <div className="sidebar-bottom">
         <div className="sidebar-user">
@@ -146,6 +151,9 @@ export default function App() {
         )}
         {route.page === 'seating-plan' && (
           <SeatingPlan eventId={route.eventId} navigate={navigate} />
+        )}
+        {route.page === 'venue-canvas' && (
+          <VenueCanvas eventId={route.eventId} navigate={navigate} />
         )}
       </main>
     </div>
