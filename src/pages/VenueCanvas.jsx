@@ -238,13 +238,13 @@ function BanquetTableSVG({ table, seatedGuests, isSelected, isDragOver }) {
 const TABLE_SVG = { round: RoundTableSVG, oval: OvalTableSVG, rect: RectTableSVG, banquet: BanquetTableSVG };
 
 // ── CanvasTable wrapper ───────────────────────────────────────────────────────
-function CanvasTable({ table, guests, isSelected, isDragging, isDragOver,
+function CanvasTable({ table, guests, isSelected, isDragging, isDragOver, isHighlighted,
                        onMouseDown, onClick, onDrop, onDragOver, onDragLeave }) {
   const seatedGuests = table.guestIds.map(id => guests.find(g=>g.id===id)).filter(Boolean);
   const Svg = TABLE_SVG[table.shape] || RoundTableSVG;
   return (
     <div
-      className={['vc-table', isSelected?'vc-table--sel':'', isDragging?'vc-table--drag':'', isDragOver?'vc-table--drop':''].join(' ').trim()}
+      className={['vc-table', isSelected?'vc-table--sel':'', isDragging?'vc-table--drag':'', isDragOver?'vc-table--drop':'', isHighlighted?'vc-table--highlight':''].join(' ').trim()}
       style={{ left: table.x, top: table.y }}
       onMouseDown={onMouseDown}
       onClick={onClick}
@@ -285,6 +285,7 @@ export default function VenueCanvas({ navigate, eventId: propId }) {
   const [addSeats,   setAddSeats]  = useState(10);
   const [zoom,       setZoom]      = useState(1);
   const [toast,      setToast]     = useState(null);
+  const [searchQuery, setSearch]   = useState('');
 
   const wrapRef = useRef(null);
   const fileRef = useRef(null);
@@ -306,6 +307,42 @@ export default function VenueCanvas({ navigate, eventId: propId }) {
     setToast({msg, type});
     setTimeout(() => setToast(null), 2800);
   }, []);
+
+  // ── Search ──
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const guestHits = guests
+      .filter(g => g.name.toLowerCase().includes(q))
+      .map(g => {
+        const tid  = seating[g.id] || null;
+        const tbl  = tid ? tables.find(t => t.id === tid) : null;
+        return { kind:'guest', id:g.id, label:g.name, tableId:tid, tableName:tbl?.name || null };
+      });
+    const tableHits = tables
+      .filter(t => t.name.toLowerCase().includes(q))
+      .map(t => ({ kind:'table', id:t.id, label:t.name, tableId:t.id,
+                   tableName:`${t.guestIds.length}/${t.maxSeats} מוזמנים` }));
+    return [...tableHits, ...guestHits];
+  }, [searchQuery, guests, seating, tables]);
+
+  const highlightedIds = useMemo(
+    () => new Set(searchResults.map(r => r.tableId).filter(Boolean)),
+    [searchResults]
+  );
+
+  const scrollToTable = useCallback((tableId) => {
+    const t = tables.find(x => x.id === tableId);
+    if (!t || !wrapRef.current) return;
+    const wrap = wrapRef.current;
+    wrap.scrollTo({
+      left: Math.max(0, t.x * zoom - wrap.clientWidth  / 2 + 80),
+      top:  Math.max(0, t.y * zoom - wrap.clientHeight / 2 + 80),
+      behavior: 'smooth',
+    });
+    setSelected(tableId);
+    setSearch('');
+  }, [tables, zoom]);
 
   // ── Add table ──
   const addTable = useCallback(() => {
@@ -554,6 +591,7 @@ export default function VenueCanvas({ navigate, eventId: propId }) {
                   isSelected={selectedId===t.id}
                   isDragging={dragTable?.id===t.id}
                   isDragOver={dragOverId===t.id}
+                  isHighlighted={highlightedIds.has(t.id)}
                   onMouseDown={e => onTableMouseDown(e, t.id)}
                   onClick={e => {e.stopPropagation(); setSelected(t.id);}}
                   onDrop={onGuestDrop}
@@ -635,6 +673,51 @@ export default function VenueCanvas({ navigate, eventId: propId }) {
               <span>לחצו על שולחן לעריכה</span>
             </div>
           )}
+
+          {/* Search bar */}
+          <div className="vc-search-bar">
+            <div className="vc-search-input-wrap">
+              <svg className="vc-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                className="vc-search-input"
+                type="text"
+                placeholder="חיפוש אורח או שולחן..."
+                value={searchQuery}
+                onChange={e => setSearch(e.target.value)}
+                dir="rtl"
+              />
+              {searchQuery && (
+                <button className="vc-search-clear" onClick={() => setSearch('')}>×</button>
+              )}
+            </div>
+            {searchResults.length > 0 && (
+              <div className="vc-search-results">
+                {searchResults.map(r => (
+                  <button
+                    key={`${r.kind}-${r.id}`}
+                    className="vc-search-result"
+                    onClick={() => r.tableId ? scrollToTable(r.tableId) : setSearch('')}
+                  >
+                    <span className={`vc-search-result-kind vc-search-kind--${r.kind}`}>
+                      {r.kind === 'table' ? 'שולחן' : 'אורח'}
+                    </span>
+                    <span className="vc-search-result-label">{r.label}</span>
+                    {r.tableName && (
+                      <span className="vc-search-result-meta">{r.tableName}</span>
+                    )}
+                    {r.kind === 'guest' && !r.tableId && (
+                      <span className="vc-search-result-unseated">לא שובץ</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            {searchQuery.trim() && searchResults.length === 0 && (
+              <div className="vc-search-empty">לא נמצאו תוצאות</div>
+            )}
+          </div>
 
           {/* Unseated guests */}
           <div className="vc-guest-panel">

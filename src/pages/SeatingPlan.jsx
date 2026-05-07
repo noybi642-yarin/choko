@@ -321,6 +321,7 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
   const [draggingId, setDragging]  = useState(null);
   const [dragOverId, setDragOver]  = useState(null);
   const [filter,     setFilter]    = useState('all');
+  const [nameFilter, setNameFilter] = useState('');
   const [mobileTab,  setMobileTab] = useState('guests');
   const [isSeating,  setIsSeating] = useState(false);
   const [toast,      setToast]     = useState(null);
@@ -331,7 +332,11 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
   );
 
   const unseated = useMemo(() => {
-    const base = guests.filter(g => g.status !== 'no' && !assigned[g.id]);
+    let base = guests.filter(g => g.status !== 'no' && !assigned[g.id]);
+    if (nameFilter.trim()) {
+      const q = nameFilter.trim().toLowerCase();
+      base = base.filter(g => g.name.toLowerCase().includes(q));
+    }
     const fn = {
       coming:  g => g.status === 'coming',
       maybe:   g => g.status === 'maybe',
@@ -341,7 +346,16 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
       friends: g => g.group  === 'חברים',
     };
     return filter === 'all' ? base : base.filter(fn[filter] || (() => true));
-  }, [guests, assigned, filter]);
+  }, [guests, assigned, filter, nameFilter]);
+
+  // search: also find seated guests by name
+  const seatedSearch = useMemo(() => {
+    if (!nameFilter.trim()) return [];
+    const q = nameFilter.trim().toLowerCase();
+    return guests
+      .filter(g => assigned[g.id] && g.name.toLowerCase().includes(q))
+      .map(g => ({ ...g, tableName: tables.find(t => t.id === assigned[g.id])?.name || '' }));
+  }, [nameFilter, guests, assigned, tables]);
 
   const stats = useMemo(() => {
     const eligible = guests.filter(g => g.status !== 'no');
@@ -524,6 +538,37 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
             <span className="sp-panel-title">ממתינים לשיבוץ</span>
             <span className="sp-badge">{unseated.length}</span>
           </div>
+
+          {/* Search input */}
+          <div className="sp-search-bar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sp-search-icon">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              className="sp-search-input"
+              type="text"
+              placeholder="חיפוש לפי שם..."
+              value={nameFilter}
+              onChange={e => setNameFilter(e.target.value)}
+              dir="rtl"
+            />
+            {nameFilter && (
+              <button className="sp-search-clear" onClick={() => setNameFilter('')}>×</button>
+            )}
+          </div>
+
+          {/* Seated search results */}
+          {seatedSearch.length > 0 && (
+            <div className="sp-search-seated">
+              {seatedSearch.map(g => (
+                <div key={g.id} className="sp-search-seated-row">
+                  <span className="sp-search-seated-name">{g.name}</span>
+                  <span className="sp-search-seated-table">{g.tableName}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="sp-filters">
             {FILTERS.map(f => (
               <button
