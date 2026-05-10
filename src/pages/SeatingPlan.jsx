@@ -310,11 +310,20 @@ export default function SeatingPlan({ navigate, eventId: propId }) {
   const eid       = propId || 'evt-demo';
   const rawGuests = getGuests(eid);
 
-  const guests = rawGuests.map(g => ({
-    ...g,
-    ...(META[g.id] || { side:'חתן', group:'אחר', rel:'distant', vip:false, elderly:false }),
-    noSeatWith: CONFLICTS[g.id] || [],
-  }));
+  const guests = rawGuests.map(g => {
+    const meta = META[g.id] || {};
+    return {
+      ...g,
+      side:      g.side    || meta.side    || 'חתן',
+      group:     g.group   || meta.group   || 'אחר',
+      vip:       g.vip     ?? meta.vip     ?? false,
+      elderly:   g.elderly ?? meta.elderly ?? false,
+      rel:       g.proximity || meta.rel   || 'distant',
+      noSeatWith: g.noSitWith
+        ? g.noSitWith.split(',').map(s => s.trim()).filter(Boolean)
+        : (CONFLICTS[g.id] || []),
+    };
+  });
 
   const [tables,     setTables]    = useState([]);
   const [assigned,   setAssigned]  = useState({});
