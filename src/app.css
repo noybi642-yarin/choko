@@ -1672,7 +1672,8 @@
 .wa2-ribbon-l { font-size: 11px; color: var(--ink-mute); margin-top: 1px; }
 
 /* ── Wizard wrapper ── */
-.wa2-wizard { background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; margin-bottom: 32px; box-shadow: 0 4px 24px oklch(0 0 0 / 0.06); }
+.wa2-wizard { background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: visible; margin-bottom: 32px; box-shadow: 0 4px 24px oklch(0 0 0 / 0.06); }
+.wa2-wizard > .wa2-steps-bar { border-radius: 20px 20px 0 0; overflow: hidden; }
 
 /* ── Step pills bar ── */
 .wa2-steps-bar { display: flex; align-items: center; padding: 20px 28px; gap: 0; background: oklch(0.975 0.008 155 / 0.5); border-bottom: 1px solid var(--line); overflow-x: auto; }
@@ -1761,6 +1762,30 @@
 .wa2-sum-row { display: flex; gap: 12px; font-size: 13.5px; }
 .wa2-sum-k { font-weight: 700; color: var(--ink); min-width: 90px; flex-shrink: 0; }
 .wa2-sum-v { color: var(--ink-soft); }
+.wa2-sum-slot { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--bg); border-radius: 9px; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: var(--ink); }
+
+/* ── Schedule slots ── */
+.wa2-schedule-slots { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.wa2-slot-card { border: 2px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; transition: border-color 0.18s; }
+.wa2-slot-card.enabled { border-color: #25d366; background: oklch(0.98 0.03 155 / 0.5); }
+.wa2-slot-top { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.wa2-slot-toggle { width: 38px; height: 22px; border-radius: 999px; border: none; background: var(--line); cursor: pointer; position: relative; transition: background 0.18s; flex-shrink: 0; padding: 0; }
+.wa2-slot-toggle.on { background: #25d366; }
+.wa2-slot-toggle-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform 0.18s; display: block; box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
+.wa2-slot-toggle.on .wa2-slot-toggle-knob { transform: translateX(16px); }
+.wa2-slot-emoji { font-size: 18px; flex-shrink: 0; }
+.wa2-slot-info { flex: 1; min-width: 0; }
+.wa2-slot-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.wa2-slot-desc { font-size: 11.5px; color: var(--ink-mute); margin-top: 1px; }
+.wa2-slot-date-badge { font-size: 11px; font-weight: 700; color: oklch(0.4 0.14 155); background: oklch(0.93 0.06 155); padding: 3px 10px; border-radius: 999px; flex-shrink: 0; }
+.wa2-slot-controls { padding: 0 16px 14px; border-top: 1px solid oklch(0.9 0.05 155 / 0.5); margin-top: 0; }
+.wa2-slot-ctrl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; }
+.wa2-slot-field { display: flex; flex-direction: column; gap: 5px; }
+.wa2-slot-field label { font-size: 12px; font-weight: 700; color: var(--ink-mute); }
+.wa2-slot-field input { border: 1.5px solid var(--line); border-radius: 9px; padding: 8px 11px; font-family: inherit; font-size: 13px; color: var(--ink); background: var(--card); }
+.wa2-slot-field input:focus { outline: none; border-color: #25d366; }
+.wa2-slot-relative { font-size: 11px; color: var(--ink-mute); margin-top: 2px; }
+.wa2-slot-reset { background: none; border: 1.5px solid var(--line); border-radius: 6px; cursor: pointer; font-size: 14px; padding: 4px 7px; color: var(--ink-mute); }
 .wa2-consent { display: flex; align-items: flex-start; gap: 11px; font-size: 13px; color: var(--ink-soft); cursor: pointer; padding: 13px 15px; background: oklch(0.98 0.015 85 / 0.5); border: 1px solid oklch(0.88 0.06 85); border-radius: 12px; line-height: 1.6; margin-bottom: 4px; }
 .wa2-consent input { width: 16px; height: 16px; accent-color: #25d366; cursor: pointer; flex-shrink: 0; margin-top: 1px; }
 .wa2-schedule-btn { background: #25d366; color: white; border: none; border-radius: 999px; padding: 11px 26px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.15s; }
