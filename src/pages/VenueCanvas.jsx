@@ -15,6 +15,7 @@ const CANVAS_W  = 1400;
 const CANVAS_H  = 900;
 const DJ_W = 130, DJ_H = 80;
 const DF_W = 240, DF_H = 170;
+const BAR_W = 180, BAR_H = 95;
 
 // ── Demo metadata ─────────────────────────────────────────────────────────────
 const DEMO_SIDE  = {g1:'כלה',g2:'חתן',g3:'כלה',g4:'חתן',g5:'כלה',g6:'חתן',g7:'כלה',g8:'חתן',g9:'כלה',g10:'חתן',g11:'כלה',g12:'חתן'};
@@ -304,6 +305,76 @@ function DanceFloorSVG({ id, facing, isSelected }) {
   );
 }
 
+function BarStationSVG({ facing, isSelected }) {
+  const W = BAR_W, H = BAR_H;
+  const tS = isSelected ? '#DB2777' : '#92400E';
+  const sw = isSelected ? 2.5 : 1.5;
+  const counterH = 38, counterY = 20;
+
+  return (
+    <svg width={W} height={H} style={{ display:'block', pointerEvents:'none', overflow:'visible' }}>
+      {/* Shadow */}
+      <rect x={3} y={counterY+3} width={W-6} height={counterH} rx={8} fill="rgba(0,0,0,0.15)"/>
+      {/* Counter body */}
+      <rect x={0} y={counterY} width={W-6} height={counterH} rx={8} fill="#7C3A0E" stroke={tS} strokeWidth={sw}/>
+      {/* Counter top surface (wood grain) */}
+      <rect x={0} y={counterY} width={W-6} height={14} rx={8} fill="#A0521E"/>
+      <rect x={0} y={counterY+6} width={W-6} height={8} fill="#A0521E"/>
+      {/* Wood grain lines */}
+      {[14,28,44,60,82,100,118,140].map((x,i) => (
+        <line key={i} x1={x} y1={counterY+1} x2={x+8} y2={counterY+13}
+          stroke="rgba(0,0,0,0.12)" strokeWidth={1} strokeLinecap="round"/>
+      ))}
+      {/* Shine on counter top */}
+      <rect x={6} y={counterY+3} width={W-22} height={3} rx={1.5} fill="rgba(255,255,255,0.18)"/>
+
+      {/* Bottles row */}
+      {[22,42,62,82,102,122,142].map((x,i) => {
+        const colors = ['#2563EB','#DC2626','#16A34A','#7C3AED','#D97706','#0891B2','#BE185D'];
+        const bH = [24,20,26,22,24,18,22][i];
+        return (
+          <g key={i}>
+            {/* Bottle body */}
+            <rect x={x} y={counterY-bH} width={8} height={bH} rx={3} fill={colors[i]} opacity={0.85}/>
+            {/* Bottle neck */}
+            <rect x={x+2} y={counterY-bH-7} width={4} height={8} rx={1.5} fill={colors[i]} opacity={0.7}/>
+            {/* Cap */}
+            <rect x={x+1.5} y={counterY-bH-9} width={5} height={3} rx={1} fill="rgba(0,0,0,0.4)"/>
+          </g>
+        );
+      })}
+
+      {/* Bar stools (front of counter) */}
+      {[18,50,82,114,146].map((x,i) => (
+        <g key={i}>
+          {/* Stool seat */}
+          <ellipse cx={x} cy={counterY+counterH+10} rx={9} ry={4} fill="#C17A3A" stroke="#92400E" strokeWidth={1}/>
+          {/* Stool leg */}
+          <line x1={x} y1={counterY+counterH+14} x2={x} y2={counterY+counterH+20}
+            stroke="#92400E" strokeWidth={2} strokeLinecap="round"/>
+        </g>
+      ))}
+
+      {/* Label */}
+      <text x={(W-6)/2} y={counterY+counterH-5} textAnchor="middle" fontSize={9} fontWeight="700"
+        fill={isSelected ? '#DB2777' : '#FDE68A'} fontFamily="Inter,sans-serif" letterSpacing="0.5">
+        עמדת בר
+      </text>
+
+      {/* Facing arrow */}
+      {facing === 'in' ? (
+        <polygon points={`${(W-6)/2},${counterY+counterH} ${(W-6)/2-8},${counterY+counterH+12} ${(W-6)/2+8},${counterY+counterH+12}`} fill="#DB2777" opacity={0.85}/>
+      ) : (
+        <polygon points={`${(W-6)/2},${counterY} ${(W-6)/2-8},${counterY-12} ${(W-6)/2+8},${counterY-12}`} fill="#DB2777" opacity={0.85}/>
+      )}
+      <text x={(W-6)/2} y={facing==='in' ? counterY+counterH+26 : counterY-15} textAnchor="middle" fontSize={7.5}
+        fill="#92400E" fontFamily="Inter,sans-serif" fontWeight="600">
+        {facing === 'in' ? 'פנים פנימה' : 'פנים החוצה'}
+      </text>
+    </svg>
+  );
+}
+
 // ── CanvasTable wrapper ───────────────────────────────────────────────────────
 function CanvasTable({ table, guests, isSelected, isDragging, isDragOver, isHighlighted,
                        onMouseDown, onClick, onDrop, onDragOver, onDragLeave }) {
@@ -326,7 +397,7 @@ function CanvasTable({ table, guests, isSelected, isDragging, isDragOver, isHigh
 
 // ── CanvasVenueElement wrapper ────────────────────────────────────────────────
 function CanvasVenueElement({ el, isSelected, isDragging, onMouseDown, onClick }) {
-  const Svg = el.type === 'dj' ? DJBoothSVG : DanceFloorSVG;
+  const Svg = el.type === 'dj' ? DJBoothSVG : el.type === 'bar' ? BarStationSVG : DanceFloorSVG;
   return (
     <div
       className={['vc-venue-el', isSelected?'vc-venue-el--sel':'', isDragging?'vc-venue-el--drag':''].join(' ').trim()}
@@ -352,7 +423,9 @@ function SeatStepper({ value, onChange, min=MIN_SEATS, max=MAX_SEATS }) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function elDimensions(type) {
-  return type === 'dj' ? { w: DJ_W, h: DJ_H } : { w: DF_W, h: DF_H };
+  if (type === 'dj')  return { w: DJ_W,  h: DJ_H  };
+  if (type === 'bar') return { w: BAR_W, h: BAR_H  };
+  return { w: DF_W, h: DF_H };
 }
 
 function snapX(type, pos) {
@@ -456,7 +529,7 @@ export default function VenueCanvas({ navigate, eventId: propId }) {
     setVenueEls(prev => [...prev, {
       id: `ve-${Date.now()}`,
       type,
-      label: type === 'dj' ? 'עמדת דיג׳י' : 'רחבת ריקודים',
+      label: type === 'dj' ? 'עמדת דיג׳י' : type === 'bar' ? 'עמדת בר' : 'רחבת ריקודים',
       x: snapX(type, 'center'),
       y: Math.min(CANVAS_H - h - 40, 40 + yOff),
       facing: 'in',
@@ -643,6 +716,13 @@ export default function VenueCanvas({ navigate, eventId: propId }) {
                   <rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
                 </svg>
                 רחבה
+              </button>
+              <button className="vc-el-btn" onClick={() => addVenueElement('bar')} title="הוסף עמדת בר">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 6h16v2H4zM6 8v8M18 8v8M4 16h16" strokeLinecap="round"/>
+                  <circle cx="8" cy="20" r="1.5"/><circle cx="16" cy="20" r="1.5"/>
+                </svg>
+                בר
               </button>
             </div>
           </div>
