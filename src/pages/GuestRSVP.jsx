@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getEvent, getGuests, updateGuestStatus } from '../store';
+import { getEvent, getGuests, updateGuestStatus, getVenueByEventId } from '../store';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -10,6 +10,7 @@ function formatDate(dateStr) {
 export default function GuestRSVP({ eventId, guestId }) {
   const [event, setEvent]     = useState(null);
   const [guest, setGuest]     = useState(null);
+  const [venue, setVenue]     = useState(null);
   const [selected, setSelected] = useState(null);
   const [count, setCount]     = useState(1);
   const [sent, setSent]       = useState(false);
@@ -18,6 +19,8 @@ export default function GuestRSVP({ eventId, guestId }) {
   useEffect(() => {
     const ev = getEvent(eventId);
     setEvent(ev);
+    const v = getVenueByEventId(eventId);
+    setVenue(v);
     if (guestId && guestId !== 'preview') {
       const guests = getGuests(eventId);
       const g = guests.find(g => g.id === guestId);
@@ -51,8 +54,42 @@ export default function GuestRSVP({ eventId, guestId }) {
       )}
 
       <div className="rsvp-page-card">
+        {/* Venue branding header */}
+        {venue && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            padding: '18px 24px 14px',
+            background: venue.primaryColor + '10',
+            borderBottom: `1px solid ${venue.primaryColor}22`,
+          }}>
+            {venue.logo ? (
+              <img src={venue.logo} alt={venue.name}
+                style={{ maxWidth: 90, maxHeight: 44, objectFit:'contain' }}/>
+            ) : (
+              <div style={{
+                width: 40, height: 40, borderRadius: 11,
+                background: venue.primaryColor,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontWeight: 800, fontSize: 18, color: 'white',
+                fontFamily: 'Playfair Display,Georgia,serif',
+              }}>
+                {venue.name?.[0]}
+              </div>
+            )}
+            <div style={{ fontSize:13, fontWeight:700, color:'#1a0a12' }}>{venue.name}</div>
+            {venue.welcomeText && (
+              <div style={{ fontSize:11, color:'#7a5060', textAlign:'center', maxWidth:260, lineHeight:1.5 }}>
+                {venue.welcomeText}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Cover */}
-        <div className="rsvp-page-cover">
+        <div className="rsvp-page-cover" style={venue ? { '--rsvp-accent': venue.primaryColor } : {}}>
           <div className="rsvp-page-cover-inner">
             <div className="rsvp-page-eyebrow">הזמנה לאירוע</div>
             <h1 className="rsvp-page-title">{event.title}</h1>

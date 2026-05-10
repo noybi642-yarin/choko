@@ -1,5 +1,128 @@
 const KEY = 'choko_demo_v1';
 
+// ── Venue store ───────────────────────────────────────────────────────────────
+const VENUE_KEY = 'choko_venue_v1';
+
+const DEMO_VENUE = {
+  id:             'venue-001',
+  name:           'גני האלגנס',
+  email:          'venue@elegance.co.il',
+  password:       'venue123',
+  logo:           null,
+  primaryColor:   '#7C3AED',
+  secondaryColor: '#5B21B6',
+  welcomeText:    'ברוכים הבאים לגני האלגנס',
+  tagline:        'כי כל רגע ראוי לחגיגה',
+  address:        'דרך השלום 42, פתח תקווה',
+  phone:          '03-9876543',
+  website:        'www.elegance-venue.co.il',
+};
+
+const DEMO_WEDDINGS = [
+  {
+    id: 'vw-1', venueId: 'venue-001',
+    coupleNames: 'נוי & ירין', groomName: 'ירין', brideName: 'נוי',
+    date: '2026-08-15', time: '19:30', guestCount: 200, status: 'confirmed',
+    contactName: 'נוי בי', contactPhone: '050-1234567', contactEmail: 'noy@example.com',
+    notes: 'חתונת חוץ, מוזיקה חיה', eventId: 'evt-demo',
+    createdAt: Date.now() - 86400000 * 30,
+  },
+  {
+    id: 'vw-2', venueId: 'venue-001',
+    coupleNames: 'מיכל & אורן', groomName: 'אורן', brideName: 'מיכל',
+    date: '2026-10-22', time: '18:00', guestCount: 150, status: 'confirmed',
+    contactName: 'מיכל כהן', contactPhone: '052-9876543', contactEmail: 'michal@example.com',
+    notes: 'חופה בגן, ערב קוקטייל', eventId: null,
+    createdAt: Date.now() - 86400000 * 15,
+  },
+  {
+    id: 'vw-3', venueId: 'venue-001',
+    coupleNames: 'שירה & דניאל', groomName: 'דניאל', brideName: 'שירה',
+    date: '2026-12-05', time: '19:00', guestCount: 280, status: 'pending',
+    contactName: 'שירה לוי', contactPhone: '054-1122334', contactEmail: 'shira@example.com',
+    notes: 'ממתין לאישור סופי', eventId: null,
+    createdAt: Date.now() - 86400000 * 5,
+  },
+  {
+    id: 'vw-4', venueId: 'venue-001',
+    coupleNames: 'טל & עמית', groomName: 'עמית', brideName: 'טל',
+    date: '2027-02-14', time: '20:00', guestCount: 120, status: 'option',
+    contactName: 'טל מזרחי', contactPhone: '058-5544332', contactEmail: 'tal@example.com',
+    notes: 'אירוע קטן ואינטימי, יום האהבה', eventId: null,
+    createdAt: Date.now() - 86400000 * 2,
+  },
+];
+
+function getVenueStore() {
+  try { return JSON.parse(localStorage.getItem(VENUE_KEY)) || {}; }
+  catch { return {}; }
+}
+function setVenueStore(data) { localStorage.setItem(VENUE_KEY, JSON.stringify(data)); }
+
+export function initVenueStore() {
+  const s = getVenueStore();
+  if (!s.initialized) {
+    setVenueStore({ initialized: true, venueSession: null, venues: [DEMO_VENUE], weddings: DEMO_WEDDINGS });
+  }
+}
+
+export function venueLogin(email, password) {
+  const s = getVenueStore();
+  const venue = (s.venues || [DEMO_VENUE]).find(v => v.email === email && v.password === password);
+  if (!venue) return null;
+  setVenueStore({ ...s, venueSession: venue });
+  return venue;
+}
+
+export function venueLogout() {
+  const s = getVenueStore();
+  setVenueStore({ ...s, venueSession: null });
+}
+
+export function getVenueSession() {
+  return getVenueStore().venueSession || null;
+}
+
+export function getVenueWeddings(venueId) {
+  return (getVenueStore().weddings || DEMO_WEDDINGS).filter(w => w.venueId === venueId);
+}
+
+export function createVenueWedding(venueId, data) {
+  const s = getVenueStore();
+  const wedding = { ...data, id: 'vw-' + Date.now(), venueId, status: 'pending', eventId: null, createdAt: Date.now() };
+  setVenueStore({ ...s, weddings: [...(s.weddings || []), wedding] });
+  return wedding;
+}
+
+export function updateVenueWedding(id, updates) {
+  const s = getVenueStore();
+  setVenueStore({ ...s, weddings: (s.weddings || []).map(w => w.id === id ? { ...w, ...updates } : w) });
+}
+
+export function deleteVenueWedding(id) {
+  const s = getVenueStore();
+  setVenueStore({ ...s, weddings: (s.weddings || []).filter(w => w.id !== id) });
+}
+
+export function getVenueById(id) {
+  return (getVenueStore().venues || [DEMO_VENUE]).find(v => v.id === id) || null;
+}
+
+export function updateVenueBranding(venueId, updates) {
+  const s = getVenueStore();
+  const venues = (s.venues || [DEMO_VENUE]).map(v => v.id === venueId ? { ...v, ...updates } : v);
+  const updated = venues.find(v => v.id === venueId);
+  setVenueStore({ ...s, venues, venueSession: updated });
+  return updated;
+}
+
+export function getVenueByEventId(eventId) {
+  const s = getVenueStore();
+  const wedding = (s.weddings || DEMO_WEDDINGS).find(w => w.eventId === eventId);
+  if (!wedding) return null;
+  return (s.venues || [DEMO_VENUE]).find(v => v.id === wedding.venueId) || null;
+}
+
 const DEMO_USER = { email: 'noybi642@gmail.com', name: 'נוי', password: 'demo123' };
 
 const DEMO_EVENT = {

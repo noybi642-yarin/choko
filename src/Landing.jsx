@@ -3,7 +3,7 @@ import PhoneRSVP from './PhoneRSVP';
 import { Steps, Features, AppBanner, Pricing, FooterCTA } from './Sections';
 import { RainbowBorderButton } from './components/ui/RainbowBorderButton';
 
-function Nav({ onLogin, navigate }) {
+function Nav({ onLogin, onVenue, navigate }) {
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -27,6 +27,9 @@ function Nav({ onLogin, navigate }) {
           <button style={{ background:'none', border:'none', cursor:'pointer', color:'inherit', fontSize:'inherit', fontWeight:'inherit', padding:0 }} onClick={() => navigate?.({ page: 'guest-calculator' })}>מחשבון מוזמנים</button>
         </div>
         <div className="lp-nav-end">
+          <button className="lp-nav-btn lp-nav-btn--ghost" style={{ fontSize:12, opacity:0.75 }} onClick={onVenue}>
+            לאולמות
+          </button>
           <button className="lp-nav-btn lp-nav-btn--ghost" onClick={onLogin}>כניסה</button>
           <RainbowBorderButton onClick={onLogin}>יצירת אירוע</RainbowBorderButton>
         </div>
@@ -35,7 +38,7 @@ function Nav({ onLogin, navigate }) {
   );
 }
 
-export default function Landing({ onLogin, onAI, navigate }) {
+export default function Landing({ onLogin, onAI, onVenue, navigate }) {
   const copyRef = useRef(null);
   const stageRef = useRef(null);
 
@@ -52,7 +55,7 @@ export default function Landing({ onLogin, onAI, navigate }) {
 
   return (
     <>
-      <Nav onLogin={onLogin} navigate={navigate} />
+      <Nav onLogin={onLogin} onVenue={onVenue} navigate={navigate} />
 
       <section className="lp-hero">
         {/* Background orbs */}
