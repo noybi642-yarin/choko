@@ -67,7 +67,7 @@ export default function VenueLogin({ onSuccess, onBack }) {
 
         <div className="venue-login-demo-hint">
           חשבון דמו לאולם<br />
-          <code>venue@elegance.co.il</code> · <code>venue123</code>
+          <code>noy@malka.co.il</code> · <code>noy123</code>
         </div>
 
         <div className="venue-login-back">

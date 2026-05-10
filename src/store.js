@@ -6,8 +6,8 @@ const VENUE_KEY = 'choko_venue_v1';
 const DEMO_VENUE = {
   id:             'venue-001',
   name:           'גני האלגנס',
-  email:          'venue@elegance.co.il',
-  password:       'venue123',
+  email:          'noy@malka.co.il',
+  password:       'noy123',
   logo:           null,
   primaryColor:   '#7C3AED',
   secondaryColor: '#5B21B6',
