@@ -202,17 +202,24 @@ export function addGuest(eventId, name, phone, group = '') {
 }
 
 export function importGuests(eventId, rows) {
-  // rows: [{ name, phone, group }]
   const s = getStore();
   const now = Date.now();
   const newGuests = rows.map((r, i) => ({
     id: 'g-' + (now + i),
     eventId,
-    name: r.name,
-    phone: r.phone || '',
-    group: r.group || '',
+    name:          r.name,
+    phone:         r.phone         || '',
+    group:         r.group         || '',
+    side:          r.side          || '',
+    vip:           r.vip           || false,
+    elderly:       r.elderly       || false,
+    guests:        r.guests        || 0,
+    proximity:     r.proximity     || '',
+    kids:          r.kids          || 0,
+    religiousLevel: r.religiousLevel || '',
+    noSitWith:     r.noSitWith     || '',
+    notes:         r.notes         || '',
     status: 'pending',
-    guests: 0,
   }));
   setStore({ ...s, guests: [...(s.guests || []), ...newGuests] });
   return newGuests.length;
