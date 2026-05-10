@@ -12,13 +12,12 @@ const AUDIENCE_OPTIONS = [
   { value: 'groom-side',   label: 'צד חתן',        emoji: '🤵', desc: 'קבוצת החתן' },
 ];
 
-const DATE_PRESETS = [
-  { label: 'חודש לפני',    days: -30 },
-  { label: 'שבועיים',      days: -14 },
-  { label: 'שבוע לפני',   days: -7  },
-  { label: 'יום לפני',    days: -1  },
-  { label: 'ביום האירוע', days: 0   },
-  { label: 'תאריך מותאם', days: null },
+const SCHEDULE_SLOTS = [
+  { id: 'invite',   label: 'הזמנה ראשונה',             emoji: '💌', desc: 'שלח את ההזמנה הראשונית לאורחים',          days: -14, time: '10:00' },
+  { id: 'reminder', label: 'תזכורת למי שלא ענה',        emoji: '🔔', desc: 'תזכורת לאורחים שטרם אישרו הגעה',           days: -7,  time: '10:00' },
+  { id: 'final',    label: 'תזכורת אחרונה לפני האירוע', emoji: '⏰', desc: 'שלח יום לפני — לאורחים שאישרו',             days: -1,  time: '09:00' },
+  { id: 'today',    label: 'ביום האירוע',               emoji: '🎉', desc: 'הודעת בוקר ביום החגיגה',                    days: 0,   time: '08:00' },
+  { id: 'thanks',   label: 'הודעת תודה',                emoji: '🙏', desc: 'יום אחרי — תודה על ההגעה',                  days: 1,   time: '11:00' },
 ];
 
 const STATUS_CFG = {
@@ -40,7 +39,7 @@ const AUDIENCE_FILTER = {
 
 const STEPS = [
   { n: 1, label: 'קהל יעד' },
-  { n: 2, label: 'הודעה' },
+  { n: 2, label: 'ניסוח הודעה' },
   { n: 3, label: 'תזמון' },
   { n: 4, label: 'אישור' },
 ];
@@ -100,7 +99,6 @@ function PhonePreview({ message, includeInviteImage, includeRsvpLink, vars }) {
       <div className="wa2-phone">
         <div className="wa2-phone-notch" />
         <div className="wa2-screen">
-          {/* WA Header */}
           <div className="wa2-wa-header">
             <div className="wa2-wa-back">‹</div>
             <div className="wa2-wa-avatar">ח</div>
@@ -110,7 +108,6 @@ function PhonePreview({ message, includeInviteImage, includeRsvpLink, vars }) {
             </div>
             <div className="wa2-wa-more">⋮</div>
           </div>
-          {/* WA Body */}
           <div className="wa2-wa-body">
             <div className="wa2-wa-datesep">היום</div>
             <div className="wa2-wa-bubble-row">
@@ -132,7 +129,6 @@ function PhonePreview({ message, includeInviteImage, includeRsvpLink, vars }) {
               </div>
             </div>
           </div>
-          {/* WA Input */}
           <div className="wa2-wa-input">
             <div className="wa2-wa-emoji">☺</div>
             <div className="wa2-wa-field">הודעה</div>
@@ -159,9 +155,9 @@ function FunnelBar({ label, value, total, color = '#25d366' }) {
   );
 }
 
-// ── Campaign Card ──────────────────────────────────────────────────────────
+// ── Message Card ───────────────────────────────────────────────────────────
 
-function CampaignCard({ campaign, guests, onDelete, onMockSend }) {
+function MessageCard({ campaign, guests, onDelete, onMockSend }) {
   const cfg = STATUS_CFG[campaign.status] || STATUS_CFG.scheduled;
   const audienceCount = guests.filter(AUDIENCE_FILTER[campaign.audience] || (() => true)).length;
   const isSent = campaign.status === 'sent';
@@ -171,7 +167,6 @@ function CampaignCard({ campaign, guests, onDelete, onMockSend }) {
 
   return (
     <div className={`wa2-camp-card${isSent ? ' is-sent' : ''}`}>
-      {/* Card top row */}
       <div className="wa2-camp-top">
         <div className="wa2-camp-left">
           <div className="wa2-camp-dot" style={{ background: cfg.color }} />
@@ -198,10 +193,8 @@ function CampaignCard({ campaign, guests, onDelete, onMockSend }) {
         </div>
       </div>
 
-      {/* Sent stats */}
       {isSent && (
         <div className="wa2-camp-stats">
-          {/* Delivery ring */}
           <div className="wa2-camp-ring">
             <DeliveryRing pct={convPct} size={100} stroke={8} />
             <div className="wa2-camp-ring-text">
@@ -209,14 +202,12 @@ function CampaignCard({ campaign, guests, onDelete, onMockSend }) {
               <div className="wa2-camp-ring-lbl">אישרו</div>
             </div>
           </div>
-          {/* Funnel */}
           <div className="wa2-camp-funnel">
             <FunnelBar label="נשלחו"  value={s.sent}      total={s.total} color="#94a3b8" />
             <FunnelBar label="נמסרו"  value={s.delivered} total={s.total} color="#6366f1" />
             <FunnelBar label="הגיבו"  value={s.replied}   total={s.total} color="#f59e0b" />
             <FunnelBar label="אישרו"  value={s.converted} total={s.total} color="#25d366" />
           </div>
-          {/* Confidence badge */}
           <div className="wa2-conf-badge">
             <span>⭐</span>
             <span>אמינות {delivPct}%</span>
@@ -237,20 +228,32 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
   const [creating, setCreating] = useState(false);
   const [step, setStep]         = useState(1);
 
+  const initSchedules = () => SCHEDULE_SLOTS.map(s => ({
+    ...s,
+    enabled: s.id === 'invite',
+    customDate: event?.date ? addDays(event.date, s.days) : '',
+    useCustom: false,
+  }));
+
   const [form, setForm] = useState({
     name:               '',
     audience:           'all',
     message:            MESSAGE_TEMPLATES[0].message,
     includeInviteImage: false,
     includeRsvpLink:    true,
-    datePreset:         null,
-    scheduledDate:      '',
-    scheduledTime:      '10:00',
     consent:            false,
+    schedules:          initSchedules(),
   });
 
   const reload  = () => setCampaigns(getCampaigns(eventId));
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const updateSchedule = (id, patch) => {
+    setForm(f => ({
+      ...f,
+      schedules: f.schedules.map(s => s.id === id ? { ...s, ...patch } : s),
+    }));
+  };
 
   if (!event) return <div className="page-content"><p>האירוע לא נמצא.</p></div>;
 
@@ -272,38 +275,33 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
   const sentCamps  = campaigns.filter(c => c.status === 'sent').length;
   const schedCamps = campaigns.filter(c => c.status === 'scheduled').length;
 
-  const handlePreset = (preset) => {
-    setField('datePreset', preset.days);
-    if (preset.days !== null && event.date) {
-      setField('scheduledDate', addDays(event.date, preset.days));
-    } else if (preset.days === null) {
-      setField('scheduledDate', '');
-    }
-  };
+  const enabledSchedules = form.schedules.filter(s => s.enabled);
 
   const handleSchedule = () => {
-    if (!form.consent) return;
-    const tplName = MESSAGE_TEMPLATES.find(t => t.message === form.message)?.name || 'קמפיין';
-    createCampaign({
-      eventId,
-      name:               form.name || tplName,
-      audience:           form.audience,
-      message:            form.message,
-      includeInviteImage: form.includeInviteImage,
-      includeRsvpLink:    form.includeRsvpLink,
-      scheduledDate:      form.scheduledDate,
-      scheduledTime:      form.scheduledTime,
+    if (!form.consent || enabledSchedules.length === 0) return;
+    enabledSchedules.forEach(slot => {
+      const baseName = form.name || 'הודעה';
+      createCampaign({
+        eventId,
+        name:               `${baseName} — ${slot.label}`,
+        audience:           form.audience,
+        message:            form.message,
+        includeInviteImage: form.includeInviteImage,
+        includeRsvpLink:    form.includeRsvpLink,
+        scheduledDate:      slot.useCustom ? slot.customDate : (event.date ? addDays(event.date, slot.days) : ''),
+        scheduledTime:      slot.time,
+      });
     });
     reload();
     setCreating(false);
     setStep(1);
     setForm({ name: '', audience: 'all', message: MESSAGE_TEMPLATES[0].message,
-              includeInviteImage: false, includeRsvpLink: true, datePreset: null,
-              scheduledDate: '', scheduledTime: '10:00', consent: false });
+              includeInviteImage: false, includeRsvpLink: true, consent: false,
+              schedules: initSchedules() });
   };
 
   const handleDelete = (id) => {
-    if (!confirm('למחוק קמפיין זה?')) return;
+    if (!confirm('למחוק הודעה זו?')) return;
     deleteCampaign(id);
     reload();
   };
@@ -353,10 +351,9 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
     <div className="wa2-step-body wa2-with-phone">
       <div className="wa2-step-content">
         <div className="wa2-step-heading">
-          <h2 className="wa2-step-title">בחר תבנית הודעה</h2>
-          <p className="wa2-step-sub">בחר מוכנה או ערוך הודעה מותאמת</p>
+          <h2 className="wa2-step-title">ניסוח הודעה</h2>
+          <p className="wa2-step-sub">בחר תבנית מוכנה או ערוך הודעה מותאמת</p>
         </div>
-        {/* Template scroll */}
         <div className="wa2-tpl-scroll">
           {MESSAGE_TEMPLATES.map(tpl => (
             <button
@@ -369,7 +366,6 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             </button>
           ))}
         </div>
-        {/* Editor */}
         <div className="wa2-editor">
           <div className="wa2-editor-top">
             <span className="wa2-editor-lbl">✏️ עריכת הודעה</span>
@@ -389,7 +385,6 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             placeholder="כתוב את ההודעה שלך כאן..."
           />
         </div>
-        {/* Image + RSVP toggles */}
         <div className="wa2-options-row">
           <div className="wa2-option-group">
             <span className="wa2-option-lbl">תמונת הזמנה:</span>
@@ -399,7 +394,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             </div>
           </div>
           <div className="wa2-option-group">
-            <span className="wa2-option-lbl">כפתור RSVP:</span>
+            <span className="wa2-option-lbl">כפתור אישור הגעה:</span>
             <div className="wa2-pill-toggle">
               <button className={`wa2-pill${form.includeRsvpLink ? ' active' : ''}`} onClick={() => setField('includeRsvpLink', true)}>✅ כן</button>
               <button className={`wa2-pill${!form.includeRsvpLink ? ' active' : ''}`} onClick={() => setField('includeRsvpLink', false)}>לא</button>
@@ -411,7 +406,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
           <button className="wa2-next-btn" onClick={() => setStep(3)}>המשך לתזמון →</button>
         </div>
       </div>
-      {/* Sticky phone */}
+
       <div className="wa2-phone-col">
         <div className="wa2-phone-label">תצוגה מקדימה</div>
         <PhonePreview
@@ -426,62 +421,100 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
     <div className="wa2-step-body wa2-with-phone">
       <div className="wa2-step-content">
         <div className="wa2-step-heading">
-          <h2 className="wa2-step-title">קבע מועד שליחה</h2>
-          <p className="wa2-step-sub">מתי לשלוח את ההודעות לאורחים?</p>
+          <h2 className="wa2-step-title">תזמון שליחות</h2>
+          <p className="wa2-step-sub">הפעל את הסוגים שרוצים לשלוח — אפשר לתזמן מספר שליחות במקביל</p>
         </div>
-        {/* Presets */}
-        <div className="wa2-preset-row">
-          {DATE_PRESETS.map(p => (
-            <button
-              key={p.label}
-              className={`wa2-preset-pill${form.datePreset === p.days ? ' active' : ''}`}
-              onClick={() => handlePreset(p)}
-            >
-              {p.label}
-              {p.days !== null && event.date && (
-                <span className="wa2-preset-sub">{formatDate(addDays(event.date, p.days))}</span>
-              )}
-            </button>
-          ))}
+
+        <div className="wa2-schedule-slots">
+          {form.schedules.map(slot => {
+            const defaultDate = event.date ? addDays(event.date, slot.days) : '';
+            const displayDate = slot.useCustom ? slot.customDate : defaultDate;
+            return (
+              <div key={slot.id} className={`wa2-slot-card${slot.enabled ? ' enabled' : ''}`}>
+                <div className="wa2-slot-top">
+                  <button
+                    className={`wa2-slot-toggle${slot.enabled ? ' on' : ''}`}
+                    onClick={() => updateSchedule(slot.id, { enabled: !slot.enabled })}
+                    aria-label={slot.enabled ? 'כבה' : 'הפעל'}
+                  >
+                    <span className="wa2-slot-toggle-knob"/>
+                  </button>
+                  <span className="wa2-slot-emoji">{slot.emoji}</span>
+                  <div className="wa2-slot-info">
+                    <div className="wa2-slot-label">{slot.label}</div>
+                    <div className="wa2-slot-desc">{slot.desc}</div>
+                  </div>
+                  {slot.enabled && displayDate && (
+                    <div className="wa2-slot-date-badge">{formatDate(displayDate)}</div>
+                  )}
+                </div>
+
+                {slot.enabled && (
+                  <div className="wa2-slot-controls">
+                    <div className="wa2-slot-ctrl-row">
+                      <div className="wa2-slot-field">
+                        <label>תאריך שליחה</label>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <input
+                            type="date"
+                            value={displayDate}
+                            onChange={e => updateSchedule(slot.id, { customDate: e.target.value, useCustom: true })}
+                          />
+                          {slot.useCustom && defaultDate && (
+                            <button
+                              className="wa2-slot-reset"
+                              onClick={() => updateSchedule(slot.id, { useCustom: false, customDate: defaultDate })}
+                              title="אפס לברירת מחדל"
+                            >
+                              ↩
+                            </button>
+                          )}
+                        </div>
+                        {!slot.useCustom && event.date && (
+                          <div className="wa2-slot-relative">
+                            {slot.days < 0 ? `${Math.abs(slot.days)} ימים לפני האירוע` :
+                             slot.days > 0 ? `${slot.days} ימים אחרי האירוע` : 'ביום האירוע'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="wa2-slot-field">
+                        <label>שעת שליחה</label>
+                        <input
+                          type="time"
+                          value={slot.time}
+                          onChange={e => updateSchedule(slot.id, { time: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-        {/* Date + Time */}
-        <div className="wa2-datetime-grid">
-          <div className="wa2-field">
-            <label>תאריך שליחה</label>
-            <input
-              type="date"
-              value={form.scheduledDate}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={e => { setField('scheduledDate', e.target.value); setField('datePreset', null); }}
-            />
-          </div>
-          <div className="wa2-field">
-            <label>שעת שליחה</label>
-            <input
-              type="time"
-              value={form.scheduledTime}
-              onChange={e => setField('scheduledTime', e.target.value)}
-            />
-          </div>
-        </div>
-        {/* Campaign name */}
-        <div className="wa2-field">
-          <label>שם הקמפיין (לשימוש פנימי)</label>
+
+        <div className="wa2-field" style={{ marginTop: 16 }}>
+          <label>שם ההודעה (לשימוש פנימי)</label>
           <input
             type="text"
             value={form.name}
             onChange={e => setField('name', e.target.value)}
-            placeholder="לדוגמה: הזמנה ראשונה — טרם ענו"
+            placeholder="לדוגמה: הזמנה ראשונה — חתונת נוי וירין"
           />
         </div>
+
         <div className="wa2-step-footer">
           <button className="wa2-cancel-btn" onClick={() => setStep(2)}>← חזרה</button>
-          <button className="wa2-next-btn" disabled={!form.scheduledDate} onClick={() => setStep(4)}>
-            לאישור סופי →
+          <button
+            className="wa2-next-btn"
+            disabled={enabledSchedules.length === 0}
+            onClick={() => setStep(4)}
+          >
+            לאישור סופי ({enabledSchedules.length} שליחות) →
           </button>
         </div>
       </div>
-      {/* Sticky phone */}
+
       <div className="wa2-phone-col">
         <div className="wa2-phone-label">תצוגה מקדימה</div>
         <PhonePreview
@@ -496,18 +529,16 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
     <div className="wa2-step-body wa2-confirm-body">
       <div className="wa2-confirm-left">
         <div className="wa2-step-heading">
-          <h2 className="wa2-step-title">אישור ושיגור</h2>
-          <p className="wa2-step-sub">בדוק את פרטי הקמפיין לפני השליחה</p>
+          <h2 className="wa2-step-title">אישור ושליחה</h2>
+          <p className="wa2-step-sub">בדוק את פרטי ההודעה לפני השליחה</p>
         </div>
-        {/* Summary card */}
         <div className="wa2-summary-card">
           {[
-            ['קמפיין',   form.name || 'קמפיין חדש'],
-            ['קהל יעד',  `${AUDIENCE_OPTIONS.find(o=>o.value===form.audience)?.label} · ${audienceCount} נמענים`],
-            ['תאריך',    `${formatDate(form.scheduledDate)} · ${form.scheduledTime}`],
-            ['הודעה',    `${form.message.slice(0, 55)}…`],
-            ['תמונה',    form.includeInviteImage ? '🖼️ מצורפת' : '💬 ללא תמונה'],
-            ['RSVP',     form.includeRsvpLink ? '✅ כלול' : '—'],
+            ['שם',        form.name || 'הודעה חדשה'],
+            ['קהל יעד',   `${AUDIENCE_OPTIONS.find(o=>o.value===form.audience)?.label} · ${audienceCount} נמענים`],
+            ['הודעה',     `${form.message.slice(0, 55)}…`],
+            ['תמונה',     form.includeInviteImage ? '🖼️ מצורפת' : '💬 ללא תמונה'],
+            ['אישור הגעה', form.includeRsvpLink ? '✅ כלול' : '—'],
           ].map(([k, v]) => (
             <div key={k} className="wa2-sum-row">
               <span className="wa2-sum-k">{k}</span>
@@ -515,7 +546,24 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             </div>
           ))}
         </div>
-        {/* Consent */}
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink-mute)', marginBottom: 8 }}>
+            שליחות מתוזמנות ({enabledSchedules.length})
+          </div>
+          {enabledSchedules.map(slot => {
+            const date = slot.useCustom ? slot.customDate : (event.date ? addDays(event.date, slot.days) : '');
+            return (
+              <div key={slot.id} className="wa2-sum-slot">
+                <span>{slot.emoji} {slot.label}</span>
+                <span style={{ color: 'var(--ink-mute)', fontSize: 12 }}>
+                  {date ? formatDate(date) : '—'} · {slot.time}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
         <label className="wa2-consent">
           <input
             type="checkbox"
@@ -531,11 +579,11 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             disabled={!form.consent}
             onClick={handleSchedule}
           >
-            🚀 תזמן שיגור
+            🚀 תזמן שליחה
           </button>
         </div>
       </div>
-      {/* Delivery confidence panel */}
+
       <div className="wa2-confidence-panel">
         <div className="wa2-conf-header">📊 צפי ביצועים</div>
         <div className="wa2-conf-ring-wrap">
@@ -548,9 +596,9 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         <div className="wa2-conf-vs">↑ 8% מממוצע התעשייה</div>
         <div className="wa2-conf-metrics">
           {[
-            { label: 'אחוז מסירה',    pct: 97, color: '#25d366' },
-            { label: 'קצב פתיחה',     pct: 82, color: '#6366f1' },
-            { label: 'אישורי הגעה',   pct: 54, color: '#f59e0b' },
+            { label: 'אחוז מסירה',  pct: 97, color: '#25d366' },
+            { label: 'קצב פתיחה',   pct: 82, color: '#6366f1' },
+            { label: 'אישורי הגעה', pct: 54, color: '#f59e0b' },
           ].map(m => (
             <div key={m.label} className="wa2-conf-metric-row">
               <div className="wa2-conf-metric-label">
@@ -570,37 +618,32 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
     </div>
   );
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
     <div className="page-content">
-
-      {/* Header */}
       <div className="wa2-header">
         <div className="wa2-header-left">
           <button className="wa2-back-btn" onClick={() => navigate({ page: 'event-detail', eventId })}>
             ← חזרה
           </button>
           <div>
-            <h1 className="wa2-page-title">📱 שיגור הזמנות</h1>
+            <h1 className="wa2-page-title">📱 שליחת הזמנות</h1>
             <div className="wa2-event-name">{event.title}</div>
           </div>
         </div>
         {!creating && (
           <button className="wa2-new-btn" onClick={() => { setCreating(true); setStep(1); }}>
-            + קמפיין חדש
+            + ניסוח הודעה חדשה
           </button>
         )}
       </div>
 
-      {/* KPI ribbon */}
       <div className="wa2-ribbon">
         {[
-          { n: guests.length,  l: 'מוזמנים',          icon: '👥', cls: '' },
-          { n: coming,         l: 'אישרו הגעה',        icon: '✅', cls: 'green' },
-          { n: pending,        l: 'טרם ענו',           icon: '⏳', cls: 'amber' },
-          { n: schedCamps,     l: 'קמפיינים מתוזמנים', icon: '📅', cls: '' },
-          { n: sentCamps,      l: 'קמפיינים שנשלחו',  icon: '✈️', cls: 'green' },
+          { n: guests.length,  l: 'מוזמנים',           icon: '👥', cls: '' },
+          { n: coming,         l: 'אישרו הגעה',         icon: '✅', cls: 'green' },
+          { n: pending,        l: 'טרם ענו',            icon: '⏳', cls: 'amber' },
+          { n: schedCamps,     l: 'הודעות מתוזמנות',   icon: '📅', cls: '' },
+          { n: sentCamps,      l: 'הודעות שנשלחו',     icon: '✈️', cls: 'green' },
         ].map(item => (
           <div key={item.l} className={`wa2-ribbon-item${item.cls ? ' ' + item.cls : ''}`}>
             <div className="wa2-ribbon-icon">{item.icon}</div>
@@ -610,10 +653,8 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         ))}
       </div>
 
-      {/* ── Wizard ─────────────────────────────────────────────────────────── */}
       {creating && (
         <div className="wa2-wizard">
-          {/* Step pills */}
           <div className="wa2-steps-bar">
             {STEPS.map((s, i) => (
               <div key={s.n} className="wa2-step-wrap">
@@ -631,7 +672,6 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             ))}
           </div>
 
-          {/* Step bodies */}
           {step === 1 && Step1}
           {step === 2 && Step2}
           {step === 3 && Step3}
@@ -639,11 +679,10 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         </div>
       )}
 
-      {/* ── Campaign list ───────────────────────────────────────────────────── */}
       {!creating && (
         <div className="wa2-campaigns">
           <div className="wa2-camps-header">
-            <h2 className="wa2-camps-title">קמפיינים</h2>
+            <h2 className="wa2-camps-title">הודעות</h2>
             {campaigns.length > 0 && (
               <span className="wa2-camps-count">{campaigns.length}</span>
             )}
@@ -651,14 +690,14 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
           {campaigns.length === 0 ? (
             <div className="wa2-empty">
               <div className="wa2-empty-icon">📱</div>
-              <div className="wa2-empty-title">אין קמפיינים עדיין</div>
-              <div className="wa2-empty-sub">צור את הקמפיין הראשון שלך ושלח הזמנות לאורחים בקליק</div>
-              <button className="wa2-new-btn" onClick={() => setCreating(true)}>+ קמפיין חדש</button>
+              <div className="wa2-empty-title">אין הודעות עדיין</div>
+              <div className="wa2-empty-sub">צור הודעה ראשונה ושלח הזמנות לאורחים בקליק</div>
+              <button className="wa2-new-btn" onClick={() => setCreating(true)}>+ ניסוח הודעה חדשה</button>
             </div>
           ) : (
             <div className="wa2-camp-list">
               {campaigns.map(c => (
-                <CampaignCard
+                <MessageCard
                   key={c.id}
                   campaign={c}
                   guests={guests}
