@@ -228,6 +228,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
   const [creating, setCreating] = useState(false);
   const [step, setStep]         = useState(1);
 
+  // schedules: one entry per slot, each with enabled + custom date + time
   const initSchedules = () => SCHEDULE_SLOTS.map(s => ({
     ...s,
     enabled: s.id === 'invite',
@@ -407,6 +408,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         </div>
       </div>
 
+      {/* Phone preview — always visible in right column */}
       <div className="wa2-phone-col">
         <div className="wa2-phone-label">תצוגה מקדימה</div>
         <PhonePreview
@@ -431,6 +433,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
             const displayDate = slot.useCustom ? slot.customDate : defaultDate;
             return (
               <div key={slot.id} className={`wa2-slot-card${slot.enabled ? ' enabled' : ''}`}>
+                {/* Top row: toggle + label */}
                 <div className="wa2-slot-top">
                   <button
                     className={`wa2-slot-toggle${slot.enabled ? ' on' : ''}`}
@@ -449,6 +452,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
                   )}
                 </div>
 
+                {/* Expanded controls when enabled */}
                 {slot.enabled && (
                   <div className="wa2-slot-controls">
                     <div className="wa2-slot-ctrl-row">
@@ -493,6 +497,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
           })}
         </div>
 
+        {/* Message name */}
         <div className="wa2-field" style={{ marginTop: 16 }}>
           <label>שם ההודעה (לשימוש פנימי)</label>
           <input
@@ -515,6 +520,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         </div>
       </div>
 
+      {/* Phone preview */}
       <div className="wa2-phone-col">
         <div className="wa2-phone-label">תצוגה מקדימה</div>
         <PhonePreview
@@ -547,6 +553,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
           ))}
         </div>
 
+        {/* Enabled schedules summary */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink-mute)', marginBottom: 8 }}>
             שליחות מתוזמנות ({enabledSchedules.length})
@@ -618,8 +625,12 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
     </div>
   );
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className="page-content">
+
+      {/* Header */}
       <div className="wa2-header">
         <div className="wa2-header-left">
           <button className="wa2-back-btn" onClick={() => navigate({ page: 'event-detail', eventId })}>
@@ -637,6 +648,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         )}
       </div>
 
+      {/* KPI ribbon */}
       <div className="wa2-ribbon">
         {[
           { n: guests.length,  l: 'מוזמנים',           icon: '👥', cls: '' },
@@ -653,6 +665,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         ))}
       </div>
 
+      {/* ── Wizard ─────────────────────────────────────────────────────────── */}
       {creating && (
         <div className="wa2-wizard">
           <div className="wa2-steps-bar">
@@ -679,6 +692,7 @@ export default function WhatsAppScheduler({ eventId, navigate }) {
         </div>
       )}
 
+      {/* ── Message list ────────────────────────────────────────────────────── */}
       {!creating && (
         <div className="wa2-campaigns">
           <div className="wa2-camps-header">
