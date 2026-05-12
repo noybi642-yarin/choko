@@ -2,6 +2,7 @@ const KEY = 'choko_demo_v1';
 
 // ── Venue store ───────────────────────────────────────────────────────────────
 const VENUE_KEY = 'choko_venue_v1';
+const VENUE_VERSION = 2;
 
 const DEMO_VENUE = {
   id:             'venue-001',
@@ -61,8 +62,8 @@ function setVenueStore(data) { localStorage.setItem(VENUE_KEY, JSON.stringify(da
 
 export function initVenueStore() {
   const s = getVenueStore();
-  if (!s.initialized) {
-    setVenueStore({ initialized: true, venueSession: null, venues: [DEMO_VENUE], weddings: DEMO_WEDDINGS });
+  if (!s.initialized || s.version !== VENUE_VERSION) {
+    setVenueStore({ initialized: true, version: VENUE_VERSION, venueSession: null, venues: [DEMO_VENUE], weddings: DEMO_WEDDINGS });
   }
 }
 
