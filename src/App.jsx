@@ -19,6 +19,7 @@ import VenueLogin from './pages/VenueLogin';
 import VenueDashboard from './pages/VenueDashboard';
 import VenueBranding from './pages/VenueBranding';
 import VenueWedding from './pages/VenueWedding';
+import LiveVenueMode from './pages/LiveVenueMode';
 import {
   LayoutGrid, Settings, LogOut, ChevronDown,
   Home, PlusCircle, Sparkles, Armchair, Map,
@@ -52,6 +53,10 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
         <button className={`sidebar-link${currentPage==='venue-canvas'?' active':''}`}
           onClick={() => navigate({page:'venue-canvas',eventId:'evt-demo'})}>
           <Map size={15} style={{marginLeft:6}}/> תוכנית אולם
+        </button>
+        <button className={`sidebar-link${currentPage==='live-venue-mode'?' active':''}`}
+          onClick={() => navigate({page:'live-venue-mode', eventId:'evt-demo'})}>
+          🔴 Live Mode
         </button>
       </nav>
       <div className="sidebar-bottom">
@@ -92,6 +97,14 @@ function VenueSidebar({ venue, currentPage, navigate, onLogout, onVenueUpdate })
         >
           <span className="venue-nav-icon"><LayoutGrid size={15}/></span>
           כל החתונות
+        </button>
+
+        <button
+          className={`venue-nav-link${currentPage==='live-venue-mode'?' active':''}`}
+          onClick={() => navigate({page:'live-venue-mode'})}
+        >
+          <span className="venue-nav-icon">🔴</span>
+          Live Venue Mode
         </button>
 
         <div className="venue-nav-section">הגדרות</div>
@@ -176,6 +189,11 @@ export default function App() {
   if (route.page === 'rsvp') {
     return <GuestRSVP eventId={route.eventId} guestId={route.guestId}
       onBack={() => setRoute({page: user?'dashboard':venueUser?'venue-dashboard':'landing'})}/>;
+  }
+
+  // ── Live Venue Mode (full-screen, no shell) ─────────────────────────────────
+  if (route.page === 'live-venue-mode') {
+    return <LiveVenueMode onBack={() => navigate({page: user ? 'dashboard' : 'venue-dashboard', eventId: route.eventId})} />;
   }
 
   // ── Venue login page ────────────────────────────────────────────────────────
