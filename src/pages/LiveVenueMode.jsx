@@ -435,7 +435,7 @@ function ArrivalsFeed({ feed, newFeedId }) {
 
 // ── Display Mode ──────────────────────────────────────────────────────────────
 
-function DisplayMode({ eventInfo, kpis, feed, currentTime, onExit }) {
+function DisplayMode({ eventInfo, kpis, feed, currentTime, onExit, onHome }) {
   const [highlighted, setHighlighted] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setHighlighted(h => (h + 1) % 3), 4000);
@@ -450,7 +450,10 @@ function DisplayMode({ eventInfo, kpis, feed, currentTime, onExit }) {
 
   return (
     <div className="lvm-display-mode" dir="rtl">
-      <button className="lvm-display-exit" onClick={onExit}>✕ יציאה</button>
+      <div className="lvm-display-nav">
+        <button className="lvm-display-nav-btn" onClick={onExit}>🎛️ חזרה ל-Live</button>
+        <button className="lvm-display-nav-btn lvm-display-nav-home" onClick={onHome}>🏠 מסך הבית</button>
+      </div>
       <div className="lvm-display-header">
         <div className="lvm-display-live">
           <span className="lvm-live-dot" />
@@ -804,6 +807,7 @@ export default function LiveVenueMode({ onBack }) {
           feed={feed}
           currentTime={currentTime}
           onExit={() => setMode('control')}
+          onHome={onBack}
         />
       </div>
     );

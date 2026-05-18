@@ -872,24 +872,61 @@
   pointer-events: none;
 }
 
-.lvm-display-exit {
+.lvm-display-nav {
   position: absolute;
   top: 20px;
   left: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.lvm-display-nav-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.55);
   font-family: inherit;
   font-size: 13px;
+  font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.lvm-display-exit:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+.lvm-display-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.lvm-display-nav-home {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: rgba(147, 197, 253, 0.8);
+}
+
+.lvm-display-nav-home:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+/* Light mode */
+.lvm-light .lvm-display-nav-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #475569;
+}
+.lvm-light .lvm-display-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+.lvm-light .lvm-display-nav-home {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+.lvm-light .lvm-display-nav-home:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
 }
 
 .lvm-display-header {
