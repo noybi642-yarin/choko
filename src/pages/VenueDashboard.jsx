@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import {
   getHolidaysForDate, getMajorHolidayForDate, getHolidaysForMonth,
+  getRestrictionForDate,
 } from '../utils/israeliHolidays';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -437,29 +438,37 @@ function MiniCalendar({ weddings, selectedDate, onSelectDate }) {
         {DAYS_HE.map(d => <div key={d} className="vd-cal-dow">{d}</div>)}
         {cells.map((dateStr, i) => {
           if (!dateStr) return <div key={`_${i}`} />;
-          const avail    = getAvailability(dateStr, weddings);
-          const dayHols  = holidays[dateStr] || [];
-          const majHol   = dayHols.find(h => h.major);
-          const isToday  = dateStr === today;
-          const isSel    = dateStr === selectedDate;
-          const isPast   = dateStr < today;
+          const avail       = getAvailability(dateStr, weddings);
+          const dayHols     = holidays[dateStr] || [];
+          const majHol      = dayHols.find(h => h.major);
+          const restriction = getRestrictionForDate(dateStr);
+          const isToday     = dateStr === today;
+          const isSel       = dateStr === selectedDate;
+          const isPast      = dateStr < today;
+
+          const titleParts = [
+            majHol      ? majHol.nameHe      : null,
+            restriction ? restriction.nameHe : null,
+          ].filter(Boolean);
 
           return (
             <button
               key={dateStr}
-              title={majHol ? majHol.nameHe : undefined}
+              title={titleParts.length ? titleParts.join(' | ') : undefined}
               onClick={() => onSelectDate(dateStr === selectedDate ? null : dateStr)}
               className={[
                 'vd-cal-day',
                 `vd-cal-day--${avail}`,
-                isPast     ? 'vd-cal-day--past'     : '',
-                isToday    ? 'vd-cal-day--today'    : '',
-                isSel      ? 'vd-cal-day--selected' : '',
-                majHol     ? 'vd-cal-day--holiday'  : '',
+                isPast       ? 'vd-cal-day--past'        : '',
+                isToday      ? 'vd-cal-day--today'       : '',
+                isSel        ? 'vd-cal-day--selected'    : '',
+                majHol       ? 'vd-cal-day--holiday'     : '',
+                restriction  ? 'vd-cal-day--restricted'  : '',
               ].filter(Boolean).join(' ')}
             >
               <span className="vd-cal-day-num">{parseInt(dateStr.slice(8), 10)}</span>
-              {majHol && <span className="vd-cal-hol-dot" />}
+              {majHol     && <span className="vd-cal-hol-dot" />}
+              {restriction && <span className={`vd-cal-rest-dot vd-cal-rest-dot--${restriction.type}`} />}
             </button>
           );
         })}
@@ -470,6 +479,7 @@ function MiniCalendar({ weddings, selectedDate, onSelectDate }) {
         <span className="vd-cal-leg-item"><span className="vd-cal-leg-dot vd-cal-leg-dot--option" />אופציה</span>
         <span className="vd-cal-leg-item"><span className="vd-cal-leg-dot vd-cal-leg-dot--booked" />תפוס</span>
         <span className="vd-cal-leg-item"><span className="vd-cal-leg-dot vd-cal-leg-dot--holiday" />חג</span>
+        <span className="vd-cal-leg-item"><span className="vd-cal-leg-dot vd-cal-leg-dot--restricted" />הגבלה הלכתית</span>
       </div>
     </div>
   );
@@ -493,6 +503,7 @@ function DayPanel({ dateStr, weddings, onClose }) {
   const avail       = getAvailability(dateStr, weddings);
   const events      = weddings.filter(w => w.date === dateStr);
   const holidays    = getHolidaysForDate(dateStr);
+  const restriction = getRestrictionForDate(dateStr);
   const suggestions = avail !== 'available' ? getSuggestedDates(dateStr, weddings, 4) : [];
 
   return (
@@ -516,6 +527,16 @@ function DayPanel({ dateStr, weddings, onClose }) {
           {holidays.some(h => h.approximate) && (
             <div className="vd-day-hol-note">* תאריכים בקירוב</div>
           )}
+        </div>
+      )}
+
+      {restriction && (
+        <div className={`vd-day-restriction vd-day-restriction--${restriction.type}`}>
+          <span className="vd-day-rest-icon">⚠️</span>
+          <div className="vd-day-rest-text">
+            <strong>{restriction.nameHe}</strong>
+            <span>{restriction.descHe}</span>
+          </div>
         </div>
       )}
 
@@ -561,7 +582,8 @@ function DateChecker({ weddings }) {
     const events      = weddings.filter(w => w.date === date);
     const suggestions = avail !== 'available' ? getSuggestedDates(date, weddings, 5) : [];
     const holiday     = getMajorHolidayForDate(date);
-    setResult({ date, avail, events, suggestions, holiday });
+    const restriction = getRestrictionForDate(date);
+    setResult({ date, avail, events, suggestions, holiday, restriction });
   };
 
   const reset = () => { setDate(''); setResult(null); };
@@ -599,6 +621,16 @@ function DateChecker({ weddings }) {
               <span className="vd-checker-hol">{result.holiday.nameHe}</span>
             )}
           </div>
+
+          {result.restriction && (
+            <div className={`vd-day-restriction vd-day-restriction--${result.restriction.type}`}>
+              <span className="vd-day-rest-icon">⚠️</span>
+              <div className="vd-day-rest-text">
+                <strong>{result.restriction.nameHe}</strong>
+                <span>{result.restriction.descHe}</span>
+              </div>
+            </div>
+          )}
 
           {result.events.length > 0 && (
             <div className="vd-checker-events">
