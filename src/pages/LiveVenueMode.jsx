@@ -275,21 +275,25 @@ function AlertsPanel({ alerts }) {
   );
 }
 
-function GuestSearch({ guests, onCheckIn }) {
+function GuestSearch({ guests, onAction }) {
   const [q, setQ] = useState('');
   const results = useMemo(() => {
     if (!q.trim()) return [];
     const lower = q.toLowerCase();
     return guests.filter(g =>
       g.name.includes(q) || g.family.includes(q) ||
-      g.name.toLowerCase().includes(lower) || g.family.toLowerCase().includes(lower)
+      g.name.toLowerCase().includes(lower) || g.family.toLowerCase().includes(lower) ||
+      (g.phone && g.phone.includes(q)) ||
+      String(g.tableId).includes(q)
     ).slice(0, 6);
   }, [q, guests]);
 
   const statusLabel = (s) => {
-    if (s === 'arrived')  return { label: 'הגיע', color: '#22c55e' };
-    if (s === 'partial')  return { label: 'חלקי', color: '#f59e0b' };
-    return                       { label: 'ממתין', color: '#64748b' };
+    if (s === 'arrived')    return { label: 'הגיע',    color: '#22c55e' };
+    if (s === 'on_the_way') return { label: 'בדרך',    color: '#f59e0b' };
+    if (s === 'not_arrived') return { label: 'לא יגיע', color: '#ef4444' };
+    if (s === 'partial')    return { label: 'חלקי',    color: '#f59e0b' };
+    return                         { label: 'ממתין',   color: '#64748b' };
   };
 
   return (
@@ -300,7 +304,7 @@ function GuestSearch({ guests, onCheckIn }) {
       <div className="lvm-search-body">
         <input
           className="lvm-search-input"
-          placeholder="שם / משפחה..."
+          placeholder="שם / טלפון / שולחן..."
           value={q}
           onChange={e => setQ(e.target.value)}
           dir="rtl"
@@ -318,7 +322,7 @@ function GuestSearch({ guests, onCheckIn }) {
                   <span className="lvm-status-badge" style={{ color: st.color, borderColor: st.color }}>{st.label}</span>
                 </div>
                 {g.status === 'pending' && (
-                  <button className="lvm-checkin-btn" onClick={() => { onCheckIn(g.id); setQ(''); }}>
+                  <button className="lvm-checkin-btn" onClick={() => { onAction(g.id, 'arrived'); setQ(''); }}>
                     ✓ צ׳ק-אין
                   </button>
                 )}
@@ -488,19 +492,113 @@ function DisplayMode({ eventInfo, kpis, feed, currentTime, onExit }) {
 
 // ── Hostess Mode ──────────────────────────────────────────────────────────────
 
-function HostessMode({ guests, feed, currentTime, onCheckIn, onExit }) {
-  const [tab, setTab]   = useState('search');
-  const [q,   setQ]     = useState('');
+function GuestCard({ g, onAction, processingId }) {
+  const isProcessing = processingId === g.id;
+
+  const statusMeta = (s) => {
+    if (s === 'arrived')    return { label: 'הגיע',    color: '#22c55e', cls: 'arrived' };
+    if (s === 'on_the_way') return { label: 'בדרך',    color: '#f59e0b', cls: 'on_the_way' };
+    if (s === 'not_arrived') return { label: 'לא יגיע', color: '#ef4444', cls: 'not_arrived' };
+    if (s === 'partial')    return { label: 'חלקי',    color: '#f59e0b', cls: 'partial' };
+    return                         { label: 'ממתין',   color: '#94a3b8', cls: 'pending' };
+  };
+  const st = statusMeta(g.status);
+
+  return (
+    <div className={`lvm-hg-card lvm-hg-status-${st.cls}`}>
+      <div className="lvm-hg-top">
+        <span className="lvm-hg-name">{g.name} {g.family}</span>
+        {g.vip && <span className="lvm-vip-badge">VIP</span>}
+        <span className="lvm-status-badge" style={{ color: st.color, borderColor: st.color }}>{st.label}</span>
+      </div>
+      <div className="lvm-hg-meta">
+        שולחן {g.tableId} · {g.headCount} אנשים
+        {g.phone && ` · ${g.phone}`}
+        {g.notes && ` · ${g.notes}`}
+      </div>
+      {g.status === 'arrived' && g.arrivalTime && (
+        <div className="lvm-hg-timestamp">✓ צ׳ק-אין ב-{g.arrivalTime}</div>
+      )}
+      <div className="lvm-hg-actions">
+        {g.status === 'pending' && (
+          <>
+            <button
+              className="lvm-hg-btn lvm-hg-btn-arrived"
+              disabled={isProcessing}
+              onClick={() => onAction(g.id, 'arrived')}
+            >✅ הגיע</button>
+            <button
+              className="lvm-hg-btn lvm-hg-btn-way"
+              disabled={isProcessing}
+              onClick={() => onAction(g.id, 'on_the_way')}
+            >🚗 בדרך</button>
+            <button
+              className="lvm-hg-btn lvm-hg-btn-no"
+              disabled={isProcessing}
+              onClick={() => onAction(g.id, 'not_arrived')}
+            >✗ לא יגיע</button>
+          </>
+        )}
+        {g.status === 'on_the_way' && (
+          <>
+            <button
+              className="lvm-hg-btn lvm-hg-btn-arrived"
+              disabled={isProcessing}
+              onClick={() => onAction(g.id, 'arrived')}
+            >✅ הגיע</button>
+            <button
+              className="lvm-hg-btn lvm-hg-btn-undo"
+              disabled={isProcessing}
+              onClick={() => onAction(g.id, 'pending')}
+            >↩ בטל</button>
+          </>
+        )}
+        {(g.status === 'arrived' || g.status === 'not_arrived') && (
+          <button
+            className="lvm-hg-btn lvm-hg-btn-undo"
+            disabled={isProcessing}
+            onClick={() => onAction(g.id, 'pending')}
+          >↩ שנה סטטוס</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HostessMode({ guests, feed, currentTime, onAction, onExit }) {
+  const [tab,          setTab]         = useState('search');
+  const [q,            setQ]           = useState('');
+  const [processingId, setProcessingId] = useState(null);
+  const [lastAction,   setLastAction]  = useState(null);
+
+  const kpiCounts = useMemo(() => ({
+    arrived:    guests.filter(g => g.status === 'arrived').length,
+    on_the_way: guests.filter(g => g.status === 'on_the_way').length,
+    pending:    guests.filter(g => g.status === 'pending').length,
+    not_arrived: guests.filter(g => g.status === 'not_arrived').length,
+  }), [guests]);
+
   const pending = useMemo(() => guests.filter(g => g.status === 'pending'), [guests]);
   const results = useMemo(() => {
     if (!q.trim()) return [];
-    return guests.filter(g => g.name.includes(q) || g.family.includes(q)).slice(0, 8);
+    return guests.filter(g =>
+      g.name.includes(q) || g.family.includes(q) ||
+      (g.phone && g.phone.includes(q)) ||
+      String(g.tableId).includes(q)
+    ).slice(0, 8);
   }, [q, guests]);
 
-  const statusLabel = (s) => {
-    if (s === 'arrived')  return { label: 'הגיע', color: '#22c55e' };
-    if (s === 'partial')  return { label: 'חלקי', color: '#f59e0b' };
-    return                       { label: 'ממתין', color: '#94a3b8' };
+  const handleAction = (guestId, action) => {
+    if (processingId) return;
+    setProcessingId(guestId);
+    onAction(guestId, action);
+    const guest = guests.find(g => g.id === guestId);
+    if (action === 'arrived' && guest) {
+      setLastAction({ name: guest.name, time: formatTimeShort(new Date()) });
+      setTimeout(() => setLastAction(null), 3000);
+    }
+    setTimeout(() => setProcessingId(null), 800);
+    if (action === 'arrived') setQ('');
   };
 
   return (
@@ -510,61 +608,62 @@ function HostessMode({ guests, feed, currentTime, onCheckIn, onExit }) {
         <span className="lvm-hostess-title">מצב קבלה</span>
         <span className="lvm-hostess-clock">{formatTimeShort(currentTime)}</span>
       </div>
+
+      <div className="lvm-hostess-kpi-row">
+        <div className="lvm-hkpi lvm-hkpi-green">
+          <span className="lvm-hkpi-num">{kpiCounts.arrived}</span>
+          <span className="lvm-hkpi-label">הגיעו</span>
+        </div>
+        <div className="lvm-hkpi lvm-hkpi-amber">
+          <span className="lvm-hkpi-num">{kpiCounts.on_the_way}</span>
+          <span className="lvm-hkpi-label">בדרך</span>
+        </div>
+        <div className="lvm-hkpi lvm-hkpi-gray">
+          <span className="lvm-hkpi-num">{kpiCounts.pending}</span>
+          <span className="lvm-hkpi-label">ממתינים</span>
+        </div>
+        <div className="lvm-hkpi lvm-hkpi-red">
+          <span className="lvm-hkpi-num">{kpiCounts.not_arrived}</span>
+          <span className="lvm-hkpi-label">לא יגיעו</span>
+        </div>
+      </div>
+
+      {lastAction && (
+        <div className="lvm-hostess-toast">
+          ✅ {lastAction.name} — נרשם ב-{lastAction.time}
+        </div>
+      )}
+
       <div className="lvm-hostess-tabs">
         <button className={`lvm-htab${tab === 'search'  ? ' active' : ''}`} onClick={() => setTab('search')}>🔍 חיפוש</button>
-        <button className={`lvm-htab${tab === 'pending' ? ' active' : ''}`} onClick={() => setTab('pending')}>⏳ ממתינים ({pending.length})</button>
+        <button className={`lvm-htab${tab === 'pending' ? ' active' : ''}`} onClick={() => setTab('pending')}>⏳ ממתינים ({kpiCounts.pending})</button>
       </div>
+
       <div className="lvm-hostess-body">
         {tab === 'search' && (
           <div className="lvm-hostess-search">
             <input
               className="lvm-hostess-search-input"
-              placeholder="חפש מוזמן..."
+              placeholder="חפש לפי שם / טלפון / שולחן..."
               value={q}
               onChange={e => setQ(e.target.value)}
               dir="rtl"
               autoFocus
             />
             <div className="lvm-hostess-results">
-              {results.map(g => {
-                const st = statusLabel(g.status);
-                return (
-                  <div key={g.id} className="lvm-hostess-guest-card">
-                    <div className="lvm-hg-top">
-                      <span className="lvm-hg-name">{g.name}</span>
-                      {g.vip && <span className="lvm-vip-badge">VIP</span>}
-                      <span className="lvm-status-badge" style={{ color: st.color, borderColor: st.color }}>{st.label}</span>
-                    </div>
-                    <div className="lvm-hg-meta">
-                      שולחן {g.tableId} · {g.headCount} אנשים
-                      {g.notes && ` · ${g.notes}`}
-                    </div>
-                    {g.status === 'pending' && (
-                      <button className="lvm-checkin-btn lvm-checkin-big" onClick={() => { onCheckIn(g.id); setQ(''); }}>
-                        ✓ צ׳ק-אין
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-              {q.trim() && results.length === 0 && <div className="lvm-empty">לא נמצאו תוצאות</div>}
+              {results.map(g => (
+                <GuestCard key={g.id} g={g} onAction={handleAction} processingId={processingId} />
+              ))}
+              {q.trim() && results.length === 0 && <div className="lvm-hg-empty">לא נמצאו תוצאות</div>}
+              {!q.trim() && <div className="lvm-hg-empty">הקלד שם, מספר טלפון או שולחן לחיפוש</div>}
             </div>
           </div>
         )}
         {tab === 'pending' && (
           <div className="lvm-hostess-pending">
-            {pending.length === 0 && <div className="lvm-empty lvm-empty-big">כל המוזמנים הגיעו! 🎉</div>}
+            {pending.length === 0 && <div className="lvm-hg-empty lvm-hg-empty-big">כל המוזמנים הגיעו! 🎉</div>}
             {pending.map(g => (
-              <div key={g.id} className="lvm-hostess-guest-card">
-                <div className="lvm-hg-top">
-                  <span className="lvm-hg-name">{g.name}</span>
-                  {g.vip && <span className="lvm-vip-badge">VIP</span>}
-                </div>
-                <div className="lvm-hg-meta">שולחן {g.tableId} · {g.headCount} אנשים</div>
-                <button className="lvm-checkin-btn lvm-checkin-big" onClick={() => onCheckIn(g.id)}>
-                  ✓ צ׳ק-אין
-                </button>
-              </div>
+              <GuestCard key={g.id} g={g} onAction={handleAction} processingId={processingId} />
             ))}
           </div>
         )}
@@ -637,31 +736,50 @@ export default function LiveVenueMode({ onBack }) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleCheckIn = useCallback((guestId) => {
+  const handleGuestAction = useCallback((guestId, action) => {
     const guest = guests.find(g => g.id === guestId);
     if (!guest) return;
     const now = formatTimeShort(new Date());
-    const id  = uid();
 
-    setGuests(gs => gs.map(g => g.id === guestId ? { ...g, status: 'arrived', arrivalTime: now } : g));
-    setTables(ts => ts.map(t =>
-      t.id === guest.tableId
-        ? { ...t, occupied: Math.min(t.occupied + guest.headCount, t.capacity) }
-        : t
+    const wasArrived = guest.status === 'arrived';
+    const nowArrived = action === 'arrived';
+
+    setGuests(gs => gs.map(g =>
+      g.id === guestId
+        ? { ...g, status: action, arrivalTime: nowArrived ? now : (action === 'pending' ? null : g.arrivalTime) }
+        : g
     ));
-    const newItem = {
-      id,
-      type: guest.vip ? 'vip' : 'arrival',
-      icon: guest.vip ? '⭐' : '✅',
-      text: `${guest.name} (${guest.headCount} אנשים) — שולחן ${guest.tableId}`,
-      time: now,
-      count: guest.headCount,
-    };
-    setFeed(f => [newItem, ...f].slice(0, 25));
-    setNewFeedId(id);
-    setCheckedInBase(c => c + 1);
-    setPulseKpi(true);
-    setTimeout(() => setPulseKpi(false), 1200);
+
+    if (nowArrived && !wasArrived) {
+      setTables(ts => ts.map(t =>
+        t.id === guest.tableId
+          ? { ...t, occupied: Math.min(t.occupied + guest.headCount, t.capacity) }
+          : t
+      ));
+      const id = uid();
+      const newItem = {
+        id,
+        type: guest.vip ? 'vip' : 'arrival',
+        icon: guest.vip ? '⭐' : '✅',
+        text: `${guest.name} (${guest.headCount} אנשים) — שולחן ${guest.tableId}`,
+        time: now,
+        count: guest.headCount,
+      };
+      setFeed(f => [newItem, ...f].slice(0, 25));
+      setNewFeedId(id);
+      setCheckedInBase(c => c + 1);
+      setPulseKpi(true);
+      setTimeout(() => setPulseKpi(false), 1200);
+    }
+
+    if (wasArrived && action === 'pending') {
+      setTables(ts => ts.map(t =>
+        t.id === guest.tableId
+          ? { ...t, occupied: Math.max(t.occupied - guest.headCount, 0) }
+          : t
+      ));
+      setCheckedInBase(c => Math.max(c - 1, 0));
+    }
   }, [guests]);
 
   const kpis = useMemo(() => {
@@ -698,7 +816,7 @@ export default function LiveVenueMode({ onBack }) {
           guests={guests}
           feed={feed}
           currentTime={currentTime}
-          onCheckIn={handleCheckIn}
+          onAction={handleGuestAction}
           onExit={() => setMode('control')}
         />
       </div>
@@ -721,7 +839,7 @@ export default function LiveVenueMode({ onBack }) {
       <div className="lvm-content">
         <div className="lvm-col-left">
           <AlertsPanel alerts={alerts} />
-          <GuestSearch guests={guests} onCheckIn={handleCheckIn} />
+          <GuestSearch guests={guests} onAction={handleGuestAction} />
         </div>
         <div className="lvm-col-center">
           <TableMap tables={tables} />

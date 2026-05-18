@@ -1373,3 +1373,371 @@
   background: var(--lvm-border-2, rgba(255,255,255,0.12));
   border-radius: 4px;
 }
+
+/* ── Light Mode Overrides ────────────────────────────────────────────────── */
+
+/* Hostess fullscreen background */
+.lvm-light .lvm-hostess-mode {
+  background: #f8fafc;
+}
+.lvm-light .lvm-hostess-header {
+  background: rgba(255,255,255,0.9);
+  border-bottom-color: rgba(0,0,0,0.08);
+}
+.lvm-light .lvm-hostess-title {
+  color: #0f172a;
+}
+.lvm-light .lvm-hostess-clock {
+  color: #64748b;
+}
+.lvm-light .lvm-hostess-tabs {
+  border-bottom-color: rgba(0,0,0,0.08);
+  background: #fff;
+}
+.lvm-light .lvm-htab {
+  color: #64748b;
+}
+.lvm-light .lvm-htab:hover:not(.active) {
+  color: #334155;
+}
+.lvm-light .lvm-hostess-body {
+  scrollbar-color: rgba(0,0,0,0.12) transparent;
+}
+.lvm-light .lvm-hostess-search-input {
+  background: #fff;
+  border-color: rgba(0,0,0,0.14);
+  color: #0f172a;
+}
+.lvm-light .lvm-hostess-search-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Guest cards */
+.lvm-light .lvm-hg-card {
+  background: #fff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.lvm-light .lvm-hg-card.lvm-hg-status-arrived    { border-color: rgba(34,197,94,0.4);  }
+.lvm-light .lvm-hg-card.lvm-hg-status-on_the_way { border-color: rgba(245,158,11,0.4); }
+.lvm-light .lvm-hg-card.lvm-hg-status-not_arrived{ border-color: rgba(239,68,68,0.35); }
+.lvm-light .lvm-hg-name { color: #0f172a; }
+.lvm-light .lvm-hg-meta { color: #64748b; opacity: 1; }
+
+/* KPI row in hostess */
+.lvm-light .lvm-hostess-kpi-row {
+  background: rgba(0,0,0,0.03);
+  border-bottom-color: rgba(0,0,0,0.08);
+}
+.lvm-light .lvm-hkpi {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.08);
+}
+.lvm-light .lvm-hkpi-label { color: #64748b; opacity: 1; }
+
+/* Toast */
+.lvm-light .lvm-hostess-toast {
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.35);
+}
+
+/* Old-style guest card (legacy, in search panel sidebar) */
+.lvm-light .lvm-hostess-guest-card {
+  background: #fff;
+  border-color: rgba(0,0,0,0.09);
+}
+
+/* Search panel in control view */
+.lvm-light .lvm-search-input {
+  background: #fff;
+  border-color: rgba(0,0,0,0.14);
+  color: #0f172a;
+}
+.lvm-light .lvm-search-result-item {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.07);
+}
+.lvm-light .lvm-sr-name { color: #0f172a; }
+
+/* Arrivals feed */
+.lvm-light .lvm-feed-item {
+  border-bottom-color: rgba(0,0,0,0.05);
+  color: #334155;
+}
+.lvm-light .lvm-feed-item:hover { background: rgba(0,0,0,0.02); }
+.lvm-light .lvm-fi-text         { color: #334155; }
+.lvm-light .lvm-fi-time         { color: #94a3b8; }
+
+/* KPI strip */
+.lvm-light .lvm-kpi-card {
+  background: #fff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.lvm-light .lvm-kpi-label { color: #64748b; }
+.lvm-light .lvm-kpi-value-num { color: #0f172a; }
+
+/* Panels */
+.lvm-light .lvm-panel {
+  background: #fff;
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.lvm-light .lvm-panel-header {
+  border-bottom-color: rgba(0,0,0,0.07);
+  color: #0f172a;
+}
+
+/* Alert cards */
+.lvm-light .lvm-alert-card {
+  background: #fff;
+}
+.lvm-light .lvm-alert-title { color: #1e293b; }
+.lvm-light .lvm-alert-body  { color: #475569; }
+.lvm-light .lvm-alert-time  { color: #94a3b8; }
+
+/* Table map */
+.lvm-light .lvm-table-visual {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.1);
+  color: #1e293b;
+}
+.lvm-light .lvm-tv-number { color: #334155; }
+.lvm-light .lvm-tv-name   { color: #64748b; }
+.lvm-light .lvm-tv-count  { color: #64748b; }
+.lvm-light .lvm-table-legend-label { color: #64748b; }
+
+/* Display (TV) mode */
+.lvm-light .lvm-display-mode {
+  background: #f8fafc;
+}
+.lvm-light .lvm-display-title {
+  color: #0f172a;
+}
+.lvm-light .lvm-display-sub {
+  color: #64748b;
+}
+.lvm-light .lvm-display-clock {
+  color: #94a3b8;
+}
+.lvm-light .lvm-display-panel {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.08);
+  border-top-color: var(--dp-color, #3b82f6);
+}
+.lvm-light .lvm-display-panel.highlighted {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.12);
+}
+.lvm-light .lvm-dp-value  { color: #0f172a; }
+.lvm-light .lvm-dp-label  { color: #64748b; }
+.lvm-light .lvm-dp-sub    { color: #94a3b8; }
+.lvm-light .lvm-dc-sep    { color: #cbd5e1; }
+.lvm-light .lvm-dc-total  { color: #94a3b8; }
+.lvm-light .lvm-dc-label  { color: #64748b; }
+.lvm-light .lvm-display-feed {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.07);
+}
+.lvm-light .lvm-df-title {
+  color: #94a3b8;
+  border-bottom-color: rgba(0,0,0,0.06);
+}
+.lvm-light .lvm-df-item {
+  color: #475569;
+  border-bottom-color: rgba(0,0,0,0.04);
+}
+.lvm-light .lvm-df-text { color: #334155; }
+.lvm-light .lvm-df-time { color: #94a3b8; }
+
+/* VIP badge stays the same across themes */
+/* Empty states */
+.lvm-light .lvm-empty       { color: #94a3b8; }
+.lvm-light .lvm-hg-empty    { color: #94a3b8; }
+
+/* Theme toggle button */
+.lvm-light .lvm-theme-btn {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.12);
+  color: #334155;
+}
+.lvm-light .lvm-theme-btn:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+/* Mode buttons */
+.lvm-light .lvm-mode-btn {
+  color: #64748b;
+  border-color: rgba(0,0,0,0.1);
+}
+.lvm-light .lvm-mode-btn.active {
+  background: rgba(34,197,94,0.12);
+  color: #16a34a;
+  border-color: rgba(34,197,94,0.4);
+}
+.lvm-light .lvm-mode-btn:hover:not(.active) {
+  background: rgba(0,0,0,0.05);
+  color: #334155;
+}
+
+/* Back button */
+.lvm-light .lvm-back-btn {
+  color: #475569;
+  border-color: rgba(0,0,0,0.1);
+}
+.lvm-light .lvm-back-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: #0f172a;
+}
+
+/* Event title in header */
+.lvm-light .lvm-event-title { color: #0f172a; }
+.lvm-light .lvm-event-sub   { color: #64748b; }
+.lvm-light .lvm-clock        { color: #334155; }
+
+/* Scrollbar in light */
+.lvm-light .lvm-feed-list::-webkit-scrollbar-thumb,
+.lvm-light .lvm-alerts-list::-webkit-scrollbar-thumb,
+.lvm-light .lvm-search-results::-webkit-scrollbar-thumb,
+.lvm-light .lvm-table-body::-webkit-scrollbar-thumb,
+.lvm-light .lvm-hostess-body::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+}
+
+/* ── Hostess Mode — Enhanced Check-in ───────────────────────────────────────── */
+
+.lvm-hostess-kpi-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid var(--lvm-border, rgba(255,255,255,0.08));
+}
+
+.lvm-hkpi {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.lvm-hkpi-num  { font-size: 22px; font-weight: 700; line-height: 1; }
+.lvm-hkpi-label { font-size: 11px; opacity: 0.65; }
+
+.lvm-hkpi-green .lvm-hkpi-num  { color: #22c55e; }
+.lvm-hkpi-amber .lvm-hkpi-num  { color: #f59e0b; }
+.lvm-hkpi-gray  .lvm-hkpi-num  { color: #94a3b8; }
+.lvm-hkpi-red   .lvm-hkpi-num  { color: #ef4444; }
+
+/* Toast */
+.lvm-hostess-toast {
+  margin: 8px 20px 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.4);
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  animation: lvm-fade-in 0.25s ease;
+}
+
+/* Guest card */
+.lvm-hg-card {
+  background: var(--lvm-card, rgba(255,255,255,0.04));
+  border: 1px solid var(--lvm-border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.lvm-hg-card.lvm-hg-status-arrived    { border-color: rgba(34,197,94,0.35); }
+.lvm-hg-card.lvm-hg-status-on_the_way { border-color: rgba(245,158,11,0.35); }
+.lvm-hg-card.lvm-hg-status-not_arrived{ border-color: rgba(239,68,68,0.3);  }
+
+.lvm-hg-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.lvm-hg-name { font-size: 15px; font-weight: 600; }
+
+.lvm-hg-meta {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.lvm-hg-timestamp {
+  font-size: 12px;
+  color: #22c55e;
+  margin-bottom: 6px;
+}
+
+.lvm-hg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lvm-hg-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.lvm-hg-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.lvm-hg-btn:not(:disabled):active { transform: scale(0.96); }
+
+.lvm-hg-btn-arrived {
+  background: rgba(34,197,94,0.18);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.4);
+}
+.lvm-hg-btn-arrived:not(:disabled):hover { background: rgba(34,197,94,0.28); }
+
+.lvm-hg-btn-way {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.4);
+}
+.lvm-hg-btn-way:not(:disabled):hover { background: rgba(245,158,11,0.25); }
+
+.lvm-hg-btn-no {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.35);
+}
+.lvm-hg-btn-no:not(:disabled):hover { background: rgba(239,68,68,0.22); }
+
+.lvm-hg-btn-undo {
+  background: rgba(148,163,184,0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148,163,184,0.3);
+}
+.lvm-hg-btn-undo:not(:disabled):hover { background: rgba(148,163,184,0.2); }
+
+/* Empty states */
+.lvm-hg-empty {
+  text-align: center;
+  padding: 28px 16px;
+  opacity: 0.45;
+  font-size: 14px;
+}
+.lvm-hg-empty-big {
+  font-size: 18px;
+  opacity: 0.7;
+  padding: 48px 16px;
+}
