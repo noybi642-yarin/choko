@@ -1373,3 +1373,141 @@
   background: var(--lvm-border-2, rgba(255,255,255,0.12));
   border-radius: 4px;
 }
+
+/* ── Hostess Mode — Enhanced Check-in ───────────────────────────────────────── */
+
+.lvm-hostess-kpi-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid var(--lvm-border, rgba(255,255,255,0.08));
+}
+
+.lvm-hkpi {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.lvm-hkpi-num  { font-size: 22px; font-weight: 700; line-height: 1; }
+.lvm-hkpi-label { font-size: 11px; opacity: 0.65; }
+
+.lvm-hkpi-green .lvm-hkpi-num  { color: #22c55e; }
+.lvm-hkpi-amber .lvm-hkpi-num  { color: #f59e0b; }
+.lvm-hkpi-gray  .lvm-hkpi-num  { color: #94a3b8; }
+.lvm-hkpi-red   .lvm-hkpi-num  { color: #ef4444; }
+
+/* Toast */
+.lvm-hostess-toast {
+  margin: 8px 20px 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.4);
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  animation: lvm-fade-in 0.25s ease;
+}
+
+/* Guest card */
+.lvm-hg-card {
+  background: var(--lvm-card, rgba(255,255,255,0.04));
+  border: 1px solid var(--lvm-border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.lvm-hg-card.lvm-hg-status-arrived    { border-color: rgba(34,197,94,0.35); }
+.lvm-hg-card.lvm-hg-status-on_the_way { border-color: rgba(245,158,11,0.35); }
+.lvm-hg-card.lvm-hg-status-not_arrived{ border-color: rgba(239,68,68,0.3);  }
+
+.lvm-hg-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.lvm-hg-name { font-size: 15px; font-weight: 600; }
+
+.lvm-hg-meta {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.lvm-hg-timestamp {
+  font-size: 12px;
+  color: #22c55e;
+  margin-bottom: 6px;
+}
+
+.lvm-hg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lvm-hg-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.lvm-hg-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.lvm-hg-btn:not(:disabled):active { transform: scale(0.96); }
+
+.lvm-hg-btn-arrived {
+  background: rgba(34,197,94,0.18);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.4);
+}
+.lvm-hg-btn-arrived:not(:disabled):hover { background: rgba(34,197,94,0.28); }
+
+.lvm-hg-btn-way {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.4);
+}
+.lvm-hg-btn-way:not(:disabled):hover { background: rgba(245,158,11,0.25); }
+
+.lvm-hg-btn-no {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.35);
+}
+.lvm-hg-btn-no:not(:disabled):hover { background: rgba(239,68,68,0.22); }
+
+.lvm-hg-btn-undo {
+  background: rgba(148,163,184,0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148,163,184,0.3);
+}
+.lvm-hg-btn-undo:not(:disabled):hover { background: rgba(148,163,184,0.2); }
+
+/* Empty states */
+.lvm-hg-empty {
+  text-align: center;
+  padding: 28px 16px;
+  opacity: 0.45;
+  font-size: 14px;
+}
+.lvm-hg-empty-big {
+  font-size: 18px;
+  opacity: 0.7;
+  padding: 48px 16px;
+}
