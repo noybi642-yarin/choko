@@ -2,7 +2,7 @@ const KEY = 'choko_demo_v1';
 
 // ── Venue store ───────────────────────────────────────────────────────────────
 const VENUE_KEY = 'choko_venue_v1';
-const VENUE_VERSION = 2;
+const VENUE_VERSION = 3;
 
 const DEMO_VENUE = {
   id:             'venue-001',
@@ -20,6 +20,43 @@ const DEMO_VENUE = {
 };
 
 const DEMO_WEDDINGS = [
+  // ─ Urgent: 2 days away, confirmed but no guest count filed ─
+  {
+    id: 'vw-5', venueId: 'venue-001',
+    coupleNames: 'ליאת & עמית', groomName: 'עמית', brideName: 'ליאת',
+    date: '2026-05-23', time: '19:30', guestCount: 0, status: 'confirmed',
+    contactName: 'ליאת שמש', contactPhone: '054-7654321', contactEmail: 'liat@example.com',
+    notes: 'רשימת אורחים לא הוגשה — דחוף!', eventId: null,
+    createdAt: Date.now() - 86400000 * 7,
+  },
+  // ─ Attention: 5 days away, pending signature ─
+  {
+    id: 'vw-6', venueId: 'venue-001',
+    coupleNames: 'הדס & נדב', groomName: 'נדב', brideName: 'הדס',
+    date: '2026-05-26', time: '18:30', guestCount: 220, status: 'pending',
+    contactName: 'הדס כץ', contactPhone: '052-3344556', contactEmail: 'hadas@example.com',
+    notes: 'ממתין לחתימת חוזה', eventId: null,
+    createdAt: Date.now() - 86400000 * 4,
+  },
+  // ─ Confirmed, next month ─
+  {
+    id: 'vw-7', venueId: 'venue-001',
+    coupleNames: 'נועם & יעל', groomName: 'נועם', brideName: 'יעל',
+    date: '2026-06-20', time: '19:00', guestCount: 180, status: 'confirmed',
+    contactName: 'יעל ברק', contactPhone: '050-9988776', contactEmail: 'yael@example.com',
+    notes: '', eventId: 'evt-demo',
+    createdAt: Date.now() - 86400000 * 10,
+  },
+  // ─ Confirmed big event ─
+  {
+    id: 'vw-8', venueId: 'venue-001',
+    coupleNames: 'רינת & גיל', groomName: 'גיל', brideName: 'רינת',
+    date: '2026-07-11', time: '20:00', guestCount: 320, status: 'confirmed',
+    contactName: 'רינת מלכא', contactPhone: '058-1122334', contactEmail: 'rinat@example.com',
+    notes: 'אירוע גדול — חכ"ל מיוחד', eventId: null,
+    createdAt: Date.now() - 86400000 * 45,
+  },
+  // ─ Original weddings ─
   {
     id: 'vw-1', venueId: 'venue-001',
     coupleNames: 'נוי & ירין', groomName: 'ירין', brideName: 'נוי',
@@ -51,6 +88,23 @@ const DEMO_WEDDINGS = [
     contactName: 'טל מזרחי', contactPhone: '058-5544332', contactEmail: 'tal@example.com',
     notes: 'אירוע קטן ואינטימי, יום האהבה', eventId: null,
     createdAt: Date.now() - 86400000 * 2,
+  },
+  // ─ Past events ─
+  {
+    id: 'vw-9', venueId: 'venue-001',
+    coupleNames: 'מאיה & רון', groomName: 'רון', brideName: 'מאיה',
+    date: '2026-04-18', time: '19:30', guestCount: 200, status: 'confirmed',
+    contactName: 'מאיה כהן', contactPhone: '054-5566778', contactEmail: 'maya@example.com',
+    notes: 'אירוע עבר בהצלחה', eventId: null,
+    createdAt: Date.now() - 86400000 * 60,
+  },
+  {
+    id: 'vw-10', venueId: 'venue-001',
+    coupleNames: 'ענת & יוסי', groomName: 'יוסי', brideName: 'ענת',
+    date: '2026-03-07', time: '18:30', guestCount: 150, status: 'confirmed',
+    contactName: 'ענת שפירא', contactPhone: '052-6677889', contactEmail: 'anat@example.com',
+    notes: '', eventId: null,
+    createdAt: Date.now() - 86400000 * 90,
   },
 ];
 
