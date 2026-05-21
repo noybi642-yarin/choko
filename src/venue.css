@@ -29,33 +29,88 @@
   direction: rtl;
 }
 
-/* ── Sidebar ── */
+/* ════════════════════════════════════════════════════════════════════════════
+   Collapsible Venue Sidebar
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Backdrop (mobile only) ── */
+.venue-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  z-index: 199;
+  pointer-events: none;
+  transition: background 0.32s ease;
+}
+@media (max-width: 768px) {
+  .venue-sidebar-backdrop { display: block; }
+  .venue-sidebar-backdrop--visible {
+    background: rgba(5, 3, 18, 0.65);
+    pointer-events: auto;
+    backdrop-filter: blur(3px);
+  }
+}
+
+/* ── Sidebar shell ── */
 .venue-sidebar {
-  width: 230px;
+  width: 264px;
   flex-shrink: 0;
-  background: var(--venue-ink);
-  display: flex;
-  flex-direction: column;
-  padding: 0;
+  background: linear-gradient(180deg, #13102B 0%, #0E0B1E 100%);
   position: sticky;
   top: 0;
   height: 100vh;
   overflow: hidden;
-  border-left: 1px solid rgba(255,255,255,0.06);
+  /* Desktop slide: animate width */
+  transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Premium edge shadow toward content */
+  box-shadow: -2px 0 28px rgba(0, 0, 0, 0.35), -1px 0 0 rgba(255,255,255,0.04);
+  z-index: 100;
+}
+.venue-sidebar--closed { width: 0; }
+
+/* Fixed-width inner so content doesn't reflow during animation */
+.venue-sidebar-inner {
+  width: 264px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
+/* ── Mobile: position fixed, slide via transform ── */
+@media (max-width: 768px) {
+  .venue-sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100dvh;
+    width: 280px !important;
+    z-index: 200;
+    transform: translateX(0);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -4px 0 40px rgba(0, 0, 0, 0.5);
+  }
+  .venue-sidebar--closed {
+    width: 280px !important;
+    transform: translateX(100%);
+  }
+  .venue-sidebar-inner { width: 280px; }
+}
+
+/* ── Brand header ── */
 .venue-sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 22px 20px 18px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  gap: 10px;
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 .venue-sidebar-logo-mark {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--venue-violet), var(--venue-primary));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,85 +119,227 @@
   color: white;
   font-family: 'Playfair Display', Georgia, serif;
   flex-shrink: 0;
+  box-shadow: 0 3px 12px rgba(124, 58, 237, 0.45);
 }
 .venue-sidebar-names {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 .venue-sidebar-product {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 .venue-sidebar-venue-name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
-  color: rgba(255,255,255,0.92);
+  color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.venue-sidebar-nav {
-  flex: 1;
-  padding: 14px 12px;
+/* ── Close button (visible on mobile / hover on desktop) ── */
+.venue-sidebar-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.45);
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  overflow-y: auto;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.venue-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+/* Hide on desktop by default, show on mobile always */
+@media (min-width: 769px) {
+  .venue-sidebar-close { opacity: 0; pointer-events: none; }
+  .venue-sidebar:hover .venue-sidebar-close { opacity: 1; pointer-events: auto; }
 }
 
-.venue-nav-section {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.25);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 14px 8px 6px;
+/* ── Navigation ── */
+.venue-sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124,58,237,0.2) transparent;
 }
+.venue-sidebar-nav::-webkit-scrollbar { width: 4px; }
+.venue-sidebar-nav::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 4px; }
+
+.venue-nav-section {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 10px 5px;
+  white-space: nowrap;
+}
+.venue-nav-section--gap { padding-top: 18px; }
 
 .venue-nav-link {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
+  padding: 8.5px 12px;
   border-radius: 9px;
   border: none;
   background: none;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255, 255, 255, 0.48);
   font-size: 13px;
   font-weight: 500;
   font-family: 'Inter', 'Heebo', sans-serif;
   cursor: pointer;
   text-align: right;
   width: 100%;
-  transition: background 0.13s, color 0.13s;
+  white-space: nowrap;
+  transition: background 0.14s, color 0.14s, box-shadow 0.14s;
+  position: relative;
 }
 .venue-nav-link:hover {
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
 }
 .venue-nav-link.active {
-  background: rgba(124,58,237,0.28);
+  background: rgba(124, 58, 237, 0.22);
   color: #C4B5FD;
   font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.3), 0 2px 8px rgba(124, 58, 237, 0.12);
+}
+.venue-nav-link.active::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  background: var(--venue-violet);
+  border-radius: 3px 0 0 3px;
 }
 .venue-nav-link.active .venue-nav-icon { color: #A78BFA; }
 .venue-nav-icon {
-  width: 16px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.3);
+}
+.venue-nav-link.active .venue-nav-icon { color: #A78BFA; }
+.venue-nav-label { flex: 1; }
+
+/* Soon badge */
+.venue-nav-soon {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 7px;
+  border-radius: 100px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.venue-nav-link--soon { cursor: default; }
+.venue-nav-link--soon:hover {
+  background: none;
+  color: rgba(255, 255, 255, 0.48);
 }
 
+/* ── Live Venue Mode card ── */
+.venue-live-section {
+  padding: 10px 10px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+.venue-live-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.07);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  text-align: right;
+  transition: all 0.16s;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.venue-live-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(239,68,68,0.09) 0%, transparent 60%);
+  pointer-events: none;
+}
+.venue-live-card:hover {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: white;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
+}
+.venue-live-card--active {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #FCA5A5;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.15);
+}
+.venue-live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #EF4444;
+  flex-shrink: 0;
+  animation: live-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+}
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+  70%  { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+.venue-live-label { flex: 1; }
+.venue-live-card .venue-live-arrow {
+  color: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+  transition: transform 0.14s, color 0.14s;
+}
+.venue-live-card:hover .venue-live-arrow {
+  transform: translateX(-3px);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── User / logout section ── */
 .venue-sidebar-bottom {
-  padding: 14px 16px;
-  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 12px 14px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 .venue-sidebar-user {
   display: flex;
@@ -162,38 +359,43 @@
   font-weight: 700;
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.35);
 }
 .venue-sidebar-user-name {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
 }
 .venue-sidebar-user-email {
   font-size: 10.5px;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.28);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 140px;
+  max-width: 150px;
 }
 .venue-logout-btn {
   width: 100%;
-  padding: 8px 12px;
+  padding: 7.5px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   background: none;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.35);
   font-size: 12px;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   text-align: right;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
 .venue-logout-btn:hover {
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.65);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.65);
+  border-color: rgba(255, 255, 255, 0.15);
 }
-
 /* ── Main content area ── */
 .venue-main {
   flex: 1;
@@ -201,6 +403,49 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  /* Smooth width transition as sidebar opens/closes */
+  transition: none;
+}
+
+/* ── Topbar (hamburger row) ── */
+.venue-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* RTL: flex-start = visual right */
+  padding: 14px 24px 4px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--venue-bg);
+  /* Invisible — just a narrow strip holding the button */
+}
+
+/* ── Hamburger button ── */
+.venue-hamburger-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(124, 58, 237, 0.22);
+  background: rgba(124, 58, 237, 0.05);
+  color: var(--venue-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.venue-hamburger-btn:hover {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.38);
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.18);
+}
+.venue-hamburger-btn--open {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.32);
+}
+.venue-hamburger-btn--open:hover {
+  background: rgba(124, 58, 237, 0.16);
 }
 
 /* ── Page wrapper ── */
@@ -1032,7 +1277,7 @@
   .vd-kpi { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
-  .venue-sidebar { width: 200px; }
+  /* sidebar handled by mobile fixed rules above */
   .vd-page, .vb-page, .vw-page { padding: 20px 16px 40px; }
   .vw-features { grid-template-columns: 1fr; }
 }
@@ -1693,7 +1938,6 @@
   .vw-info-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .venue-sidebar { width: 200px; }
   .vd-page, .vb-page, .vw-page { padding: 20px 16px 40px; }
   .vw-features { grid-template-columns: 1fr; }
   .vd-crm-filters { flex-direction: column; align-items: stretch; }

@@ -23,6 +23,8 @@ import LiveVenueMode from './pages/LiveVenueMode';
 import {
   LayoutGrid, Settings, LogOut, ChevronDown,
   Home, PlusCircle, Sparkles, Armchair, Map,
+  Calendar, Users, FileText, BarChart2, Activity,
+  Menu, X, ChevronLeft,
 } from 'lucide-react';
 
 initStore();
@@ -74,72 +76,125 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
 }
 
 // ── Venue sidebar ─────────────────────────────────────────────────────────────
-function VenueSidebar({ venue, currentPage, navigate, onLogout, onVenueUpdate }) {
+
+const VENUE_NAV_MAIN = [
+  { key: 'venue-dashboard', icon: LayoutGrid, label: 'כל החתונות' },
+  { key: 'calendar',        icon: Calendar,   label: 'לוח שנה',          soon: true },
+  { key: 'clients',         icon: Users,      label: 'לקוחות',           soon: true },
+  { key: 'proposals',       icon: FileText,   label: 'הצעות ואופציות',   soon: true },
+  { key: 'reports',         icon: BarChart2,  label: 'דוחות',            soon: true },
+];
+
+const VENUE_NAV_SETTINGS = [
+  { key: 'venue-branding', icon: Settings, label: 'הגדרות' },
+];
+
+function VenueSidebar({ venue, currentPage, navigate, onLogout, isOpen, onToggle }) {
+  const mobileClose = () => { if (window.innerWidth < 768) onToggle(); };
+
   return (
-    <aside className="venue-sidebar">
-      <div className="venue-sidebar-brand">
-        <div className="venue-sidebar-logo-mark" style={{ background: venue.primaryColor }}>
-          {venue.logo
-            ? <img src={venue.logo} style={{width:26,height:26,borderRadius:6,objectFit:'contain'}} alt=""/>
-            : (venue.name?.[0] || 'V')}
-        </div>
-        <div className="venue-sidebar-names">
-          <div className="venue-sidebar-product">choko · venues</div>
-          <div className="venue-sidebar-venue-name">{venue.name}</div>
-        </div>
-      </div>
+    <>
+      {/* Mobile backdrop */}
+      <div
+        className={`venue-sidebar-backdrop${isOpen ? ' venue-sidebar-backdrop--visible' : ''}`}
+        onClick={onToggle}
+      />
 
-      <nav className="venue-sidebar-nav">
-        <div className="venue-nav-section">ניהול</div>
-        <button
-          className={`venue-nav-link${currentPage==='venue-dashboard'?' active':''}`}
-          onClick={() => navigate({page:'venue-dashboard'})}
-        >
-          <span className="venue-nav-icon"><LayoutGrid size={15}/></span>
-          כל החתונות
-        </button>
+      <aside className={`venue-sidebar${isOpen ? '' : ' venue-sidebar--closed'}`}>
+        <div className="venue-sidebar-inner">
 
-        <button
-          className={`venue-nav-link${currentPage==='live-venue-mode'?' active':''}`}
-          onClick={() => navigate({page:'live-venue-mode'})}
-        >
-          <span className="venue-nav-icon">🔴</span>
-          Live Venue Mode
-        </button>
-
-        <div className="venue-nav-section">הגדרות</div>
-        <button
-          className={`venue-nav-link${currentPage==='venue-branding'?' active':''}`}
-          onClick={() => navigate({page:'venue-branding'})}
-        >
-          <span className="venue-nav-icon"><Settings size={15}/></span>
-          מיתוג האולם
-        </button>
-      </nav>
-
-      <div className="venue-sidebar-bottom">
-        <div className="venue-sidebar-user">
-          <div className="venue-sidebar-avatar">
-            {venue.name?.[0] || 'V'}
+          {/* ── Brand header ── */}
+          <div className="venue-sidebar-brand">
+            <div
+              className="venue-sidebar-logo-mark"
+              style={{ background: `linear-gradient(135deg, ${venue.primaryColor || '#7C3AED'}, ${venue.secondaryColor || '#4F46E5'})` }}
+            >
+              {venue.logo
+                ? <img src={venue.logo} style={{ width: 18, height: 18, borderRadius: 4, objectFit: 'contain' }} alt="" />
+                : (venue.name?.[0] || 'V')}
+            </div>
+            <div className="venue-sidebar-names">
+              <div className="venue-sidebar-product">choko · venues</div>
+              <div className="venue-sidebar-venue-name">{venue.name}</div>
+            </div>
+            <button className="venue-sidebar-close" onClick={onToggle} title="סגור">
+              <X size={15} />
+            </button>
           </div>
-          <div>
-            <div className="venue-sidebar-user-name">{venue.name}</div>
-            <div className="venue-sidebar-user-email">{venue.email}</div>
+
+          {/* ── Main navigation ── */}
+          <nav className="venue-sidebar-nav">
+            <div className="venue-nav-section">ניהול</div>
+            {VENUE_NAV_MAIN.map(item => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  className={`venue-nav-link${currentPage === item.key ? ' active' : ''}${item.soon ? ' venue-nav-link--soon' : ''}`}
+                  onClick={() => { if (!item.soon) { navigate({ page: item.key }); mobileClose(); } }}
+                >
+                  <span className="venue-nav-icon"><Icon size={15} /></span>
+                  <span className="venue-nav-label">{item.label}</span>
+                  {item.soon && <span className="venue-nav-soon">בקרוב</span>}
+                </button>
+              );
+            })}
+
+            <div className="venue-nav-section venue-nav-section--gap">הגדרות</div>
+            {VENUE_NAV_SETTINGS.map(item => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  className={`venue-nav-link${currentPage === item.key ? ' active' : ''}`}
+                  onClick={() => { navigate({ page: item.key }); mobileClose(); }}
+                >
+                  <span className="venue-nav-icon"><Icon size={15} /></span>
+                  <span className="venue-nav-label">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* ── Live Venue Mode — special card ── */}
+          <div className="venue-live-section">
+            <button
+              className={`venue-live-card${currentPage === 'live-venue-mode' ? ' venue-live-card--active' : ''}`}
+              onClick={() => { navigate({ page: 'live-venue-mode' }); mobileClose(); }}
+            >
+              <span className="venue-live-pulse-dot" />
+              <Activity size={16} />
+              <span className="venue-live-label">Live Venue Mode</span>
+              <ChevronLeft size={13} className="venue-live-arrow" />
+            </button>
           </div>
+
+          {/* ── User / logout ── */}
+          <div className="venue-sidebar-bottom">
+            <div className="venue-sidebar-user">
+              <div className="venue-sidebar-avatar">{venue.name?.[0] || 'V'}</div>
+              <div>
+                <div className="venue-sidebar-user-name">{venue.name}</div>
+                <div className="venue-sidebar-user-email">{venue.email}</div>
+              </div>
+            </div>
+            <button className="venue-logout-btn" onClick={onLogout}>
+              <LogOut size={12} style={{ marginLeft: 5, verticalAlign: 'middle' }} /> יציאה
+            </button>
+          </div>
+
         </div>
-        <button className="venue-logout-btn" onClick={onLogout}>
-          <LogOut size={12} style={{marginLeft:5, verticalAlign:'middle'}}/> יציאה
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 
 // ── Root App ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [user,      setUser]      = useState(() => getSession());
-  const [venueUser, setVenueUser] = useState(() => getVenueSession());
-  const [route,     setRoute]     = useState(() => {
+  const [user,        setUser]        = useState(() => getSession());
+  const [venueUser,   setVenueUser]   = useState(() => getVenueSession());
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
+  const [route,       setRoute]       = useState(() => {
     const h = window.location.hash.slice(1);
     const m = h.match(/^\/rsvp\/([^/]+)(?:\/([^/]+))?$/);
     if (m) return { page:'rsvp', eventId:m[1], guestId:m[2] };
@@ -210,9 +265,21 @@ export default function App() {
           currentPage={route.page}
           navigate={navigate}
           onLogout={handleVenueLogout}
-          onVenueUpdate={handleVenueUpdate}
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(s => !s)}
         />
         <main className="venue-main">
+          {/* Hamburger toggle — top of every venue page */}
+          <div className="venue-topbar">
+            <button
+              className={`venue-hamburger-btn${sidebarOpen ? ' venue-hamburger-btn--open' : ''}`}
+              onClick={() => setSidebarOpen(s => !s)}
+              title={sidebarOpen ? 'סגור תפריט' : 'פתח תפריט'}
+            >
+              {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
+            </button>
+          </div>
+
           {route.page === 'venue-dashboard' && (
             <VenueDashboard venue={venueUser} navigate={navigate}/>
           )}
@@ -222,7 +289,6 @@ export default function App() {
           {route.page === 'venue-wedding' && (
             <VenueWedding weddingId={route.weddingId} venue={venueUser} navigate={navigate}/>
           )}
-          {/* Venue admins can access the existing tools for a specific wedding */}
           {route.page === 'event-detail' && (
             <EventDetail eventId={route.eventId} navigate={navigate}/>
           )}
