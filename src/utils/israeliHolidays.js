@@ -7,8 +7,12 @@
 // They depend on moon sighting and may shift ±1-2 days from what is listed.
 // All approximate entries are flagged with { approximate: true }.
 //
-// To extend beyond 2029, add a new year block to HOLIDAYS_DB using the
-// same shape: { date: 'YYYY-MM-DD', nameHe: string, type: 'jewish'|'national'|'muslim', major: boolean, approximate?: boolean }
+// TISHA B'AV NOTE: When 9 Av falls on Shabbat the fast is deferred to Sunday.
+// This affects 2025 (Aug 2→3) and 2029 (Jul 21→22). Those end-dates are used below.
+//
+// To extend beyond 2029, add a new year block using the same shape:
+//   { date: 'YYYY-MM-DD', nameHe: string, type: 'jewish'|'national'|'muslim',
+//     major: boolean, approximate?: boolean }
 //
 // Sources: Jewish calendar — hebcal.com / chabad.org
 //          Muslim calendar — islamicfinder.org (Israel/Palestine region)
@@ -36,7 +40,8 @@ const HOLIDAYS_DB = {
     { date: '2025-06-02', nameHe: 'שבועות (יום ב׳)',    type: 'jewish',   major: true  },
     { date: '2025-06-06', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
     { date: '2025-06-07', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
-    { date: '2025-08-12', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
+    { date: '2025-07-13', nameHe: 'צום י"ז בתמוז',     type: 'jewish',   major: false },
+    { date: '2025-08-03', nameHe: 'תשעה באב',           type: 'jewish',   major: true  }, // deferred from Shabbat Aug 2
     { date: '2025-09-22', nameHe: 'ראש השנה (יום א׳)',  type: 'jewish',   major: true  },
     { date: '2025-09-23', nameHe: 'ראש השנה (יום ב׳)',  type: 'jewish',   major: true  },
     { date: '2025-10-01', nameHe: 'יום כיפור',          type: 'jewish',   major: true  },
@@ -75,11 +80,13 @@ const HOLIDAYS_DB = {
     { date: '2026-04-09', nameHe: 'יום השואה',          type: 'national', major: true  },
     { date: '2026-04-21', nameHe: 'יום הזיכרון',        type: 'national', major: true  },
     { date: '2026-04-22', nameHe: 'יום העצמאות',        type: 'national', major: true  },
+    { date: '2026-05-05', nameHe: 'ל"ג בעומר',          type: 'jewish',   major: false },
     { date: '2026-05-22', nameHe: 'שבועות (יום א׳)',    type: 'jewish',   major: true  },
     { date: '2026-05-23', nameHe: 'שבועות (יום ב׳)',    type: 'jewish',   major: true  },
     { date: '2026-05-27', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
     { date: '2026-05-28', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
-    { date: '2026-08-02', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
+    { date: '2026-07-02', nameHe: 'צום י"ז בתמוז',     type: 'jewish',   major: false },
+    { date: '2026-07-23', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
     { date: '2026-09-11', nameHe: 'ראש השנה (יום א׳)',  type: 'jewish',   major: true  },
     { date: '2026-09-12', nameHe: 'ראש השנה (יום ב׳)',  type: 'jewish',   major: true  },
     { date: '2026-09-20', nameHe: 'יום כיפור',          type: 'jewish',   major: true  },
@@ -108,12 +115,19 @@ const HOLIDAYS_DB = {
     { date: '2027-03-23', nameHe: 'פורים',              type: 'jewish',   major: true  },
     { date: '2027-04-20', nameHe: 'ערב פסח',            type: 'jewish',   major: true  },
     { date: '2027-04-21', nameHe: 'פסח (יום א׳)',       type: 'jewish',   major: true  },
+    { date: '2027-04-22', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2027-04-23', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2027-04-24', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2027-04-25', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2027-04-26', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
     { date: '2027-04-27', nameHe: 'שביעי של פסח',       type: 'jewish',   major: true  },
     { date: '2027-04-29', nameHe: 'יום העצמאות',        type: 'national', major: true  },
     { date: '2027-05-16', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
     { date: '2027-05-17', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
+    { date: '2027-05-24', nameHe: 'ל"ג בעומר',          type: 'jewish',   major: false },
     { date: '2027-06-10', nameHe: 'שבועות',             type: 'jewish',   major: true  },
-    { date: '2027-08-19', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
+    { date: '2027-07-21', nameHe: 'צום י"ז בתמוז',     type: 'jewish',   major: false },
+    { date: '2027-08-11', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
     { date: '2027-10-01', nameHe: 'ראש השנה (יום א׳)',  type: 'jewish',   major: true  },
     { date: '2027-10-02', nameHe: 'ראש השנה (יום ב׳)',  type: 'jewish',   major: true  },
     { date: '2027-10-10', nameHe: 'יום כיפור',          type: 'jewish',   major: true  },
@@ -136,12 +150,19 @@ const HOLIDAYS_DB = {
     { date: '2028-03-11', nameHe: 'פורים',              type: 'jewish',   major: true  },
     { date: '2028-04-09', nameHe: 'ערב פסח',            type: 'jewish',   major: true  },
     { date: '2028-04-10', nameHe: 'פסח (יום א׳)',       type: 'jewish',   major: true  },
+    { date: '2028-04-11', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2028-04-12', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2028-04-13', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2028-04-14', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2028-04-15', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
     { date: '2028-04-16', nameHe: 'שביעי של פסח',       type: 'jewish',   major: true  },
     { date: '2028-04-27', nameHe: 'יום העצמאות',        type: 'national', major: true  },
     { date: '2028-05-05', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
     { date: '2028-05-06', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
+    { date: '2028-05-13', nameHe: 'ל"ג בעומר',          type: 'jewish',   major: false },
     { date: '2028-05-30', nameHe: 'שבועות',             type: 'jewish',   major: true  },
-    { date: '2028-08-07', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
+    { date: '2028-07-10', nameHe: 'צום י"ז בתמוז',     type: 'jewish',   major: false },
+    { date: '2028-07-31', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
     { date: '2028-09-20', nameHe: 'ראש השנה (יום א׳)',  type: 'jewish',   major: true  },
     { date: '2028-09-21', nameHe: 'ראש השנה (יום ב׳)',  type: 'jewish',   major: true  },
     { date: '2028-09-29', nameHe: 'יום כיפור',          type: 'jewish',   major: true  },
@@ -163,12 +184,19 @@ const HOLIDAYS_DB = {
     { date: '2029-02-17', nameHe: 'עיד אל-פיטר',       type: 'muslim',   major: true,  approximate: true },
     { date: '2029-03-01', nameHe: 'פורים',              type: 'jewish',   major: true  },
     { date: '2029-03-31', nameHe: 'פסח (יום א׳)',       type: 'jewish',   major: true  },
+    { date: '2029-04-01', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2029-04-02', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2029-04-03', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2029-04-04', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
+    { date: '2029-04-05', nameHe: 'חול המועד פסח',      type: 'jewish',   major: false },
     { date: '2029-04-06', nameHe: 'שביעי של פסח',       type: 'jewish',   major: true  },
     { date: '2029-04-25', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
     { date: '2029-04-26', nameHe: 'עיד אל-אדחא',       type: 'muslim',   major: true,  approximate: true },
     { date: '2029-04-29', nameHe: 'יום העצמאות',        type: 'national', major: true  },
+    { date: '2029-05-03', nameHe: 'ל"ג בעומר',          type: 'jewish',   major: false },
     { date: '2029-05-19', nameHe: 'שבועות',             type: 'jewish',   major: true  },
-    { date: '2029-07-29', nameHe: 'תשעה באב',           type: 'jewish',   major: true  },
+    { date: '2029-07-01', nameHe: 'צום י"ז בתמוז',     type: 'jewish',   major: false }, // deferred from Shabbat Jun 30
+    { date: '2029-07-22', nameHe: 'תשעה באב',           type: 'jewish',   major: true  }, // deferred from Shabbat Jul 21
     { date: '2029-09-09', nameHe: 'ראש השנה (יום א׳)',  type: 'jewish',   major: true  },
     { date: '2029-09-10', nameHe: 'ראש השנה (יום ב׳)',  type: 'jewish',   major: true  },
     { date: '2029-09-18', nameHe: 'יום כיפור',          type: 'jewish',   major: true  },
@@ -185,6 +213,44 @@ const HOLIDAYS_DB = {
     { date: '2029-12-08', nameHe: 'חנוכה (נר ח׳)',      type: 'jewish',   major: false },
   ],
 };
+
+// ── Halachic restrictions (periods when rabbis generally do not officiate) ────
+//
+// BEIN HAMETZARIM (Three Weeks): from 17 Tammuz to 9 Av (inclusive).
+// No weddings are conducted during this period by any stream of Orthodox Judaism.
+// The venue may operate normally, but couples should know no rabbi will officiate.
+// Note: when 17 Tammuz or 9 Av falls on Shabbat, the restriction starts/ends
+// on the deferred (Sunday) date for practical scheduling purposes.
+//
+// SEFIRAT HAOMER (Counting of the Omer): from the day after last day of Pesach
+// through the day before Shavuot.
+// Most Orthodox/traditional rabbis do not officiate at weddings during this
+// period, EXCEPT on Lag Ba'Omer (day 33) which is universally permitted.
+// Customs vary: some permit from Lag Ba'Omer onwards; some Sephardi communities
+// have different restrictions. Mark as caution — not an absolute block.
+
+const RESTRICTIONS_DB = {
+  beinHametzarim: {
+    // { start, end } — both dates inclusive; end = Tisha B'Av (deferred if Shabbat)
+    2025: { start: '2025-07-13', end: '2025-08-03' },
+    2026: { start: '2026-07-02', end: '2026-07-23' },
+    2027: { start: '2027-07-21', end: '2027-08-11' },
+    2028: { start: '2028-07-10', end: '2028-07-31' },
+    2029: { start: '2029-06-30', end: '2029-07-22' }, // both 17 Tammuz & Tisha B'Av deferred
+  },
+  sefiratHaOmer: {
+    // start = day after last day of Pesach (22 Nisan in Israel)
+    // end   = day before Shavuot (5 Sivan)
+    // lagBaomer = 18 Iyar — weddings are permitted on this day
+    2025: { start: '2025-04-20', end: '2025-05-31', lagBaomer: '2025-05-16' },
+    2026: { start: '2026-04-09', end: '2026-05-21', lagBaomer: '2026-05-05' },
+    2027: { start: '2027-04-28', end: '2027-06-09', lagBaomer: '2027-05-24' },
+    2028: { start: '2028-04-17', end: '2028-05-29', lagBaomer: '2028-05-13' },
+    2029: { start: '2029-04-07', end: '2029-05-18', lagBaomer: '2029-05-03' },
+  },
+};
+
+// ── Public API ─────────────────────────────────────────────────────────────────
 
 export function getHolidaysForDate(dateStr) {
   if (!dateStr) return [];
@@ -203,4 +269,61 @@ export function isMajorHoliday(dateStr) {
 export function getHolidaysForMonth(year, month) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
   return (HOLIDAYS_DB[year] || []).filter(h => h.date.startsWith(prefix));
+}
+
+/**
+ * Returns the halachic restriction (if any) for a given date.
+ * Returns null if the date has no restriction.
+ *
+ * Return shape:
+ *   { type: 'bein-hametzarim' | 'sefirat-haomer', nameHe: string, descHe: string }
+ */
+export function getRestrictionForDate(dateStr) {
+  if (!dateStr) return null;
+  const year = parseInt(dateStr.slice(0, 4), 10);
+
+  const bhm = RESTRICTIONS_DB.beinHametzarim[year];
+  if (bhm && dateStr >= bhm.start && dateStr <= bhm.end) {
+    return {
+      type:   'bein-hametzarim',
+      nameHe: 'בין המצרים',
+      descHe: 'תקופת אבלות (י"ז בתמוז עד תשעה באב) — רב לא יכול לחתן',
+    };
+  }
+
+  const sfo = RESTRICTIONS_DB.sefiratHaOmer[year];
+  if (sfo && dateStr >= sfo.start && dateStr <= sfo.end) {
+    if (dateStr === sfo.lagBaomer) return null; // Lag Ba'Omer is permitted
+    return {
+      type:   'sefirat-haomer',
+      nameHe: 'ספירת העומר',
+      descHe: 'ספירת העומר — רוב הרבנים לא מחתנים בתקופה זו (מנהגים משתנים, ל"ג בעומר מותר)',
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Returns all restrictions that overlap with a given month.
+ * Useful for rendering the calendar month view.
+ * Returns array of { type, nameHe, descHe, start, end } objects.
+ */
+export function getRestrictionsForMonth(year, month) {
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+  const result = [];
+
+  const bhm = RESTRICTIONS_DB.beinHametzarim[year];
+  if (bhm && (bhm.start.startsWith(prefix) || bhm.end.startsWith(prefix) ||
+      (bhm.start < prefix + '-01' && bhm.end > prefix + '-31'))) {
+    result.push({ ...bhm, type: 'bein-hametzarim', nameHe: 'בין המצרים' });
+  }
+
+  const sfo = RESTRICTIONS_DB.sefiratHaOmer[year];
+  if (sfo && (sfo.start.startsWith(prefix) || sfo.end.startsWith(prefix) ||
+      (sfo.start < prefix + '-01' && sfo.end > prefix + '-31'))) {
+    result.push({ ...sfo, type: 'sefirat-haomer', nameHe: 'ספירת העומר' });
+  }
+
+  return result;
 }

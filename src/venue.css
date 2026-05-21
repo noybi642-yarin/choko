@@ -1605,6 +1605,81 @@
   padding: 1px 5px;
 }
 
+/* ── Halachic Restrictions ── */
+
+/* Calendar day highlight for restricted dates */
+.vd-cal-day--restricted {
+  position: relative;
+}
+.vd-cal-day--restricted::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  border: 1.5px solid rgba(139, 92, 246, 0.45);
+  pointer-events: none;
+}
+
+/* Small restriction dot under the day number */
+.vd-cal-rest-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin: 1px auto 0;
+}
+.vd-cal-rest-dot--bein-hametzarim {
+  background: #7C3AED;
+}
+.vd-cal-rest-dot--sefirat-haomer {
+  background: #8B5CF6;
+}
+
+/* Legend dot for restrictions */
+.vd-cal-leg-dot--restricted {
+  background: #7C3AED;
+  border: 1.5px solid rgba(124, 58, 237, 0.5);
+}
+
+/* Restriction info box (DayPanel + DateChecker) */
+.vd-day-restriction {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.vd-day-restriction--bein-hametzarim {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+.vd-day-restriction--sefirat-haomer {
+  background: rgba(139, 92, 246, 0.07);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+}
+.vd-day-rest-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.vd-day-rest-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #4C1D95;
+}
+.vd-day-rest-text strong {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.vd-day-rest-text span {
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .vd-main-layout { flex-direction: column; }
