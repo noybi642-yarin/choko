@@ -19,6 +19,7 @@ import VenueLogin from './pages/VenueLogin';
 import VenueDashboard from './pages/VenueDashboard';
 import VenueBranding from './pages/VenueBranding';
 import VenueWedding from './pages/VenueWedding';
+import VenueClients from './pages/VenueClients';
 import LiveVenueMode from './pages/LiveVenueMode';
 import {
   LayoutGrid, Settings, LogOut, ChevronDown,
@@ -80,7 +81,7 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
 const VENUE_NAV_MAIN = [
   { key: 'venue-dashboard', icon: LayoutGrid, label: 'כל החתונות' },
   { key: 'calendar',        icon: Calendar,   label: 'לוח שנה',          soon: true },
-  { key: 'clients',         icon: Users,      label: 'לקוחות',           soon: true },
+  { key: 'clients',         icon: Users,      label: 'לקוחות' },
   { key: 'proposals',       icon: FileText,   label: 'הצעות ואופציות',   soon: true },
   { key: 'reports',         icon: BarChart2,  label: 'דוחות',            soon: true },
 ];
@@ -282,6 +283,9 @@ export default function App() {
 
           {route.page === 'venue-dashboard' && (
             <VenueDashboard venue={venueUser} navigate={navigate}/>
+          )}
+          {route.page === 'clients' && (
+            <VenueClients venue={venueUser} navigate={navigate}/>
           )}
           {route.page === 'venue-branding' && (
             <VenueBranding venue={venueUser} onVenueUpdate={handleVenueUpdate}/>
