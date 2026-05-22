@@ -100,7 +100,7 @@ function VenueSidebar({ venue, currentPage, navigate, onLogout, isOpen, onToggle
         onClick={onToggle}
       />
 
-      <aside className={`venue-sidebar${isOpen ? '' : ' venue-sidebar--closed'}`}>
+      <aside className={`venue-sidebar${isOpen ? ' venue-sidebar--open' : ''}`}>
         <div className="venue-sidebar-inner">
 
           {/* ── Brand header ── */}
@@ -193,7 +193,7 @@ function VenueSidebar({ venue, currentPage, navigate, onLogout, isOpen, onToggle
 export default function App() {
   const [user,        setUser]        = useState(() => getSession());
   const [venueUser,   setVenueUser]   = useState(() => getVenueSession());
-  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [route,       setRoute]       = useState(() => {
     const h = window.location.hash.slice(1);
     const m = h.match(/^\/rsvp\/([^/]+)(?:\/([^/]+))?$/);

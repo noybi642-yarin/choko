@@ -30,7 +30,7 @@
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   Collapsible Venue Sidebar
+   Icon-Rail Venue Sidebar
    ════════════════════════════════════════════════════════════════════════════ */
 
 /* ── Backdrop (mobile only) ── */
@@ -54,46 +54,74 @@
 
 /* ── Sidebar shell ── */
 .venue-sidebar {
-  width: 264px;
-  flex-shrink: 0;
-  background: linear-gradient(180deg, #13102B 0%, #0E0B1E 100%);
-  position: sticky;
+  position: fixed;
+  right: 0;
   top: 0;
   height: 100vh;
+  width: 56px;  /* icon rail — desktop default */
   overflow: hidden;
-  /* Desktop slide: animate width */
-  transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Premium edge shadow toward content */
+  background: linear-gradient(180deg, #13102B 0%, #0E0B1E 100%);
+  transition: width 0.34s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: -2px 0 28px rgba(0, 0, 0, 0.35), -1px 0 0 rgba(255,255,255,0.04);
-  z-index: 100;
+  z-index: 200;
 }
-.venue-sidebar--closed { width: 0; }
 
-/* Fixed-width inner so content doesn't reflow during animation */
+/* Desktop: expand on hover or explicit --open */
+@media (min-width: 769px) {
+  .venue-sidebar:hover,
+  .venue-sidebar.venue-sidebar--open {
+    width: 240px;
+  }
+}
+
+/* ── Inner wrapper — fixed width prevents text reflow ── */
 .venue-sidebar-inner {
-  width: 264px;
+  width: 240px;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* ── Mobile: position fixed, slide via transform ── */
+/* ── Fade text when icon-rail is collapsed (desktop only) ── */
+@media (min-width: 769px) {
+  .venue-sidebar-names,
+  .venue-nav-label,
+  .venue-nav-section,
+  .venue-nav-soon,
+  .venue-live-label,
+  .venue-live-arrow,
+  .venue-sidebar-user-name,
+  .venue-sidebar-user-email,
+  .venue-logout-btn,
+  .venue-sidebar-close {
+    transition: opacity 0.22s ease;
+  }
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-sidebar-names,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-nav-label,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-nav-section,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-nav-soon,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-live-label,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-live-arrow,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-sidebar-user-name,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-sidebar-user-email,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-logout-btn,
+  .venue-sidebar:not(.venue-sidebar--open):not(:hover) .venue-sidebar-close {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ── Mobile: hidden by default, slide in when --open ── */
 @media (max-width: 768px) {
   .venue-sidebar {
-    position: fixed;
-    right: 0;
-    top: 0;
-    height: 100dvh;
     width: 280px !important;
-    z-index: 200;
-    transform: translateX(0);
+    transform: translateX(100%);
     transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: -4px 0 40px rgba(0, 0, 0, 0.5);
   }
-  .venue-sidebar--closed {
-    width: 280px !important;
-    transform: translateX(100%);
+  .venue-sidebar.venue-sidebar--open {
+    transform: translateX(0);
   }
   .venue-sidebar-inner { width: 280px; }
 }
@@ -403,21 +431,27 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  /* Smooth width transition as sidebar opens/closes */
-  transition: none;
+  margin-right: 56px; /* offset for fixed icon-rail sidebar */
+}
+@media (max-width: 768px) {
+  .venue-main { margin-right: 0; }
 }
 
-/* ── Topbar (hamburger row) ── */
+/* ── Topbar (hamburger row — mobile only) ── */
 .venue-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start; /* RTL: flex-start = visual right */
-  padding: 14px 24px 4px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--venue-bg);
-  /* Invisible — just a narrow strip holding the button */
+  display: none; /* hidden on desktop; icon-rail hover handles expansion */
+}
+@media (max-width: 768px) {
+  .venue-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 14px 20px 4px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--venue-bg);
+  }
 }
 
 /* ── Hamburger button ── */
@@ -499,6 +533,19 @@
 }
 .venue-btn--danger:hover { background: rgba(239,68,68,0.14); }
 .venue-btn--sm { padding: 6px 14px; font-size: 11.5px; border-radius: 8px; }
+.venue-btn--cta {
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  color: white;
+  padding: 11px 22px;
+  font-size: 14px;
+  border-radius: 11px;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.38), 0 1px 4px rgba(0,0,0,0.12);
+}
+.venue-btn--cta:hover {
+  background: linear-gradient(135deg, #6D28D9, #4338CA);
+  box-shadow: 0 6px 22px rgba(124,58,237,0.46), 0 2px 6px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+}
 
 /* ════════════════════════════════════════════════════════════════════════════
    Venue Login
@@ -1959,9 +2006,15 @@
 /* ── KPI Cards v2 ── */
 .vd-kpi-v2 {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: 2.2fr 1.6fr 1.6fr 1fr 1fr;
   gap: 12px;
   margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+  .vd-kpi-v2 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .vd-kpi-v2 { grid-template-columns: 1fr 1fr; }
 }
 
 .vd-kpi-card-v2 {
@@ -2030,6 +2083,16 @@
   font-weight: 500;
 }
 
+/* Tier: primary (largest) */
+.vd-kpi-card-v2--primary .vd-kpi-v2-val { font-size: 30px; }
+.vd-kpi-card-v2--primary { padding: 18px 20px; }
+
+/* Tier: small */
+.vd-kpi-card-v2--small .vd-kpi-v2-val { font-size: 18px; }
+.vd-kpi-card-v2--small .vd-kpi-v2-icon-wrap { width: 30px; height: 30px; }
+.vd-kpi-card-v2--small .vd-kpi-v2-label { font-size: 10px; }
+.vd-kpi-card-v2--small { padding: 12px 14px; gap: 8px; }
+
 /* Pulsing attention card */
 .vd-kpi-card-v2--pulse {
   animation: kpi-pulse 2.5s ease-in-out infinite;
@@ -2053,22 +2116,19 @@
   50%       { opacity: 0.4; transform: scale(0.75); }
 }
 
-/* ── AI Insights Panel ── */
-.vd-ai-panel {
+/* ── AI Unified Card ── */
+.vd-ai-unified {
   background: linear-gradient(135deg, rgba(79,70,229,0.04) 0%, rgba(124,58,237,0.06) 100%);
   border: 1px solid rgba(124,58,237,0.14);
   border-radius: 14px;
-  padding: 12px 16px;
+  padding: 11px 16px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 12px rgba(79,70,229,0.06);
-}
-.vd-ai-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 14px;
+  flex-wrap: wrap;
 }
-.vd-ai-brand {
+.vd-ai-unified-head {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2076,7 +2136,8 @@
   font-weight: 700;
   color: var(--venue-violet);
   font-family: 'Inter', sans-serif;
-  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .vd-ai-badge {
   font-size: 9.5px;
@@ -2088,54 +2149,28 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.vd-ai-updated {
-  font-size: 10.5px;
-  color: var(--venue-mute);
-}
-.vd-ai-insights {
+.vd-ai-chips {
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
-.vd-ai-insights::-webkit-scrollbar { display: none; }
-.vd-ai-insight {
-  flex-shrink: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: 10px;
+.vd-ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
   border: 1px solid;
-  min-width: 200px;
-  max-width: 260px;
-  transition: box-shadow 0.12s;
-  cursor: default;
-}
-.vd-ai-insight:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-}
-.vd-ai-insight-icon {
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.vd-ai-insight-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.vd-ai-insight-text {
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 11.5px;
+  font-weight: 600;
   font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  cursor: default;
+  transition: box-shadow 0.12s;
 }
-.vd-ai-insight-detail {
-  font-size: 10.5px;
-  color: var(--venue-mute);
-  line-height: 1.4;
-}
+.vd-ai-chip:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
 /* ── Activity Feed ── */
 .vd-activity-feed {
@@ -2412,6 +2447,36 @@
 }
 .vd-day-cta--ghost:hover { background: rgba(79,70,229,0.13); }
 
+/* ── Waiting couples list ── */
+.vd-waiting-couples {
+  margin-top: 10px;
+  border-top: 1px solid var(--venue-border);
+  padding-top: 10px;
+}
+.vd-waiting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(124,58,237,0.06);
+}
+.vd-waiting-row:last-child { border-bottom: none; }
+.vd-waiting-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--venue-ink);
+}
+.vd-waiting-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--venue-primary);
+  text-decoration: none;
+  transition: opacity 0.12s;
+}
+.vd-waiting-phone:hover { opacity: 0.7; }
+
 /* ── Date checker CTAs ── */
 .vd-checker-ctas {
   display: flex;
@@ -2421,12 +2486,8 @@
 }
 
 /* ── Responsive for new layout ── */
-@media (max-width: 1200px) {
-  .vd-kpi-v2 { grid-template-columns: repeat(3, 1fr); }
-}
 @media (max-width: 900px) {
   .vd-kpi-v2 { grid-template-columns: repeat(2, 1fr); }
-  .vd-ai-insights { flex-wrap: nowrap; }
 }
 @media (max-width: 640px) {
   .vd-kpi-v2 { grid-template-columns: 1fr 1fr; }
