@@ -19,6 +19,7 @@ import VenueLogin from './pages/VenueLogin';
 import VenueDashboard from './pages/VenueDashboard';
 import VenueBranding from './pages/VenueBranding';
 import VenueWedding from './pages/VenueWedding';
+import VenueClients from './pages/VenueClients';
 import LiveVenueMode from './pages/LiveVenueMode';
 import {
   LayoutGrid, Settings, LogOut, ChevronDown,
@@ -80,7 +81,7 @@ function AppSidebar({ user, currentPage, navigate, onLogout }) {
 const VENUE_NAV_MAIN = [
   { key: 'venue-dashboard', icon: LayoutGrid, label: 'כל החתונות' },
   { key: 'calendar',        icon: Calendar,   label: 'לוח שנה',          soon: true },
-  { key: 'clients',         icon: Users,      label: 'לקוחות',           soon: true },
+  { key: 'clients',         icon: Users,      label: 'לקוחות' },
   { key: 'proposals',       icon: FileText,   label: 'הצעות ואופציות',   soon: true },
   { key: 'reports',         icon: BarChart2,  label: 'דוחות',            soon: true },
 ];
@@ -100,7 +101,7 @@ function VenueSidebar({ venue, currentPage, navigate, onLogout, isOpen, onToggle
         onClick={onToggle}
       />
 
-      <aside className={`venue-sidebar${isOpen ? '' : ' venue-sidebar--closed'}`}>
+      <aside className={`venue-sidebar${isOpen ? ' venue-sidebar--open' : ''}`}>
         <div className="venue-sidebar-inner">
 
           {/* ── Brand header ── */}
@@ -193,7 +194,7 @@ function VenueSidebar({ venue, currentPage, navigate, onLogout, isOpen, onToggle
 export default function App() {
   const [user,        setUser]        = useState(() => getSession());
   const [venueUser,   setVenueUser]   = useState(() => getVenueSession());
-  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [route,       setRoute]       = useState(() => {
     const h = window.location.hash.slice(1);
     const m = h.match(/^\/rsvp\/([^/]+)(?:\/([^/]+))?$/);
@@ -282,6 +283,9 @@ export default function App() {
 
           {route.page === 'venue-dashboard' && (
             <VenueDashboard venue={venueUser} navigate={navigate}/>
+          )}
+          {route.page === 'clients' && (
+            <VenueClients venue={venueUser} navigate={navigate}/>
           )}
           {route.page === 'venue-branding' && (
             <VenueBranding venue={venueUser} onVenueUpdate={handleVenueUpdate}/>

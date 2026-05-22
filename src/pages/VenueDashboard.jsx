@@ -22,6 +22,14 @@ const DAYS_HE      = ['א','ב','ג','ד','ה','ו','ש'];
 const AVAIL_LABEL  = { available: 'פנוי', option: 'אופציה', booked: 'תפוס' };
 const AVAIL_CLS    = { available: 'green', option: 'amber', booked: 'red' };
 
+const WAITING_COUPLES = [
+  { name: 'ליאת & עמית',  phone: '054-1111111', preferDay: 5 },
+  { name: 'הדר & ניר',    phone: '052-2222222', preferDay: 6 },
+  { name: 'שי & רונית',   phone: '050-3333333', preferDay: 5 },
+  { name: 'גיל & יעל',    phone: '053-4444444', preferDay: 6 },
+  { name: 'תמר & אורן',   phone: '058-5555555', preferDay: 5 },
+];
+
 const MOCK_ACTIVITIES = [
   { id: 1, icon: CreditCard,    text: 'תשלום ₪50,000 התקבל',       sub: 'נוי & ירין',      time: 'לפני שעה',   color: '#16A34A' },
   { id: 2, icon: FileText,      text: 'חוזה נחתם',                  sub: 'שירה & דניאל',    time: 'לפני 3 שעות',color: '#4F46E5' },
@@ -97,16 +105,16 @@ function getNextAction(w) {
   if (!w) return '—';
   if (w.status === 'cancelled') return 'בוטל';
   const days = daysUntil(w.date);
-  if (days !== null && days >= 0 && days <= 1) return 'חתונה היום / מחר!';
+  if (days !== null && days >= 0 && days <= 1) return 'היום/מחר!';
   if (days !== null && days >= 0 && days <= 7) {
-    if (!w.guestCount) return 'רשימת אורחים חסרה';
-    if (w.status !== 'confirmed') return 'סגירה דחופה!';
-    return 'הכן לאירוע';
+    if (!w.guestCount) return 'חסר: אורחים';
+    if (w.status !== 'confirmed') return 'דחוף: סגור';
+    return 'הכן';
   }
-  if (!w.guestCount) return 'מספר אורחים חסר';
-  if (w.status === 'pending') return 'ממתין לאישור';
-  if (w.status === 'option') return 'ממתין לסגירה';
-  if (!w.eventId) return 'קישור אירוע חסר';
+  if (!w.guestCount) return 'חסר: אורחים';
+  if (w.status === 'pending') return 'ממתין';
+  if (w.status === 'option') return 'אופציה';
+  if (!w.eventId) return 'חסר: קישור';
   return 'מוכן ✓';
 }
 
@@ -259,6 +267,7 @@ function KpiCards({ weddings }) {
   const kpis = [
     {
       key: 'revenue',
+      tier: 'primary',
       icon: TrendingUp,
       value: `₪${(expectedRevenue / 1000).toFixed(0)}K`,
       label: 'הכנסה צפויה',
@@ -268,27 +277,8 @@ function KpiCards({ weddings }) {
       border: 'rgba(22,163,74,0.2)',
     },
     {
-      key: 'occupancy',
-      icon: BarChart2,
-      value: `${occupancy}%`,
-      label: 'תפוסת החודש',
-      sub: `${occupancy >= 70 ? 'תפוסה גבוהה' : 'יש מקום פנוי'}`,
-      color: '#4F46E5',
-      bg: 'rgba(79,70,229,0.07)',
-      border: 'rgba(79,70,229,0.18)',
-    },
-    {
-      key: 'week',
-      icon: Calendar,
-      value: String(thisWeekEvents),
-      label: 'אירועים השבוע',
-      sub: 'ב-7 הימים הקרובים',
-      color: '#0891B2',
-      bg: 'rgba(8,145,178,0.07)',
-      border: 'rgba(8,145,178,0.18)',
-    },
-    {
       key: 'attention',
+      tier: 'secondary',
       icon: AlertTriangle,
       value: String(needsAttention),
       label: 'דורשים טיפול',
@@ -299,11 +289,34 @@ function KpiCards({ weddings }) {
       pulse: needsAttention > 0,
     },
     {
+      key: 'week',
+      tier: 'secondary',
+      icon: Calendar,
+      value: String(thisWeekEvents),
+      label: 'השבוע',
+      sub: 'ב-7 הימים הקרובים',
+      color: '#0891B2',
+      bg: 'rgba(8,145,178,0.07)',
+      border: 'rgba(8,145,178,0.18)',
+    },
+    {
+      key: 'occupancy',
+      tier: 'small',
+      icon: BarChart2,
+      value: `${occupancy}%`,
+      label: 'תפוסה',
+      sub: occupancy >= 70 ? 'גבוהה' : 'פנוי',
+      color: '#4F46E5',
+      bg: 'rgba(79,70,229,0.07)',
+      border: 'rgba(79,70,229,0.18)',
+    },
+    {
       key: 'hotdates',
+      tier: 'small',
       icon: Flame,
       value: String(hotDates.length),
-      label: 'תאריכים פנויים',
-      sub: hotDates[0] ? formatDate(hotDates[0], 'short') + ' הקרוב' : 'בדוק יומן',
+      label: 'פנויים',
+      sub: hotDates[0] ? formatDate(hotDates[0], 'short') : 'בדוק',
       color: '#D97706',
       bg: 'rgba(217,119,6,0.07)',
       border: 'rgba(217,119,6,0.2)',
@@ -317,11 +330,11 @@ function KpiCards({ weddings }) {
         return (
           <div
             key={k.key}
-            className={`vd-kpi-card-v2${k.pulse ? ' vd-kpi-card-v2--pulse' : ''}`}
+            className={`vd-kpi-card-v2${k.tier ? ` vd-kpi-card-v2--${k.tier}` : ''}${k.pulse ? ' vd-kpi-card-v2--pulse' : ''}`}
             style={{ borderColor: k.border, '--kpi-color': k.color, '--kpi-bg': k.bg }}
           >
             <div className="vd-kpi-v2-icon-wrap" style={{ background: k.bg, color: k.color }}>
-              <Icon size={18} strokeWidth={2} />
+              <Icon size={k.tier === 'small' ? 15 : 18} strokeWidth={2} />
             </div>
             <div className="vd-kpi-v2-body">
               <div className="vd-kpi-v2-val" style={{ color: k.color }}>{k.value}</div>
@@ -338,14 +351,14 @@ function KpiCards({ weddings }) {
   );
 }
 
-// ── AI Insights Panel ─────────────────────────────────────────────────────────
+// ── AI Insights (unified chip card) ──────────────────────────────────────────
 
 function AiInsights({ weddings }) {
   const todayStr = toISODate(new Date());
 
-  const urgentWeddings = weddings.filter(w => getUrgency(w) === 'urgent');
-  const attentionWeddings = weddings.filter(w => getUrgency(w) === 'attention');
-  const pendingCount = weddings.filter(w => w.status === 'pending' && w.date >= todayStr).length;
+  const urgentCount    = weddings.filter(w => getUrgency(w) === 'urgent').length;
+  const attentionCount = weddings.filter(w => getUrgency(w) === 'attention').length;
+  const pendingCount   = weddings.filter(w => w.status === 'pending' && w.date >= todayStr).length;
 
   const hotDates = useMemo(() => {
     const now = new Date();
@@ -362,77 +375,53 @@ function AiInsights({ weddings }) {
     return results;
   }, [weddings]);
 
-  const insights = [
-    urgentWeddings.length > 0 && {
-      id: 'urgent',
-      icon: Zap,
-      text: `${urgentWeddings.length} אירוע${urgentWeddings.length > 1 ? 'ים' : ''} דחוף${urgentWeddings.length > 1 ? 'ים' : ''} השבוע`,
-      detail: urgentWeddings.map(w => w.coupleNames).join(', '),
-      color: '#DC2626',
-      bg: 'rgba(220,38,38,0.07)',
-      border: 'rgba(220,38,38,0.18)',
+  const chips = [
+    urgentCount > 0 && {
+      id: 'urgent', icon: Zap,
+      text: `${urgentCount} דחוף${urgentCount > 1 ? 'ים' : ''} השבוע`,
+      color: '#DC2626', bg: 'rgba(220,38,38,0.07)', border: 'rgba(220,38,38,0.22)',
     },
-    attentionWeddings.length > 0 && {
-      id: 'attention',
-      icon: Bell,
-      text: `${attentionWeddings.length} אירועים ממתינים לטיפול`,
-      detail: attentionWeddings.map(w => getNextAction(w)).filter((v, i, a) => a.indexOf(v) === i).join(' · '),
-      color: '#D97706',
-      bg: 'rgba(217,119,6,0.07)',
-      border: 'rgba(217,119,6,0.2)',
+    attentionCount > 0 && {
+      id: 'attention', icon: Bell,
+      text: `${attentionCount} ממתינים לטיפול`,
+      color: '#D97706', bg: 'rgba(217,119,6,0.07)', border: 'rgba(217,119,6,0.22)',
     },
     hotDates.length > 0 && {
-      id: 'hotdates',
-      icon: Star,
-      text: `${hotDates.length} תאריכי שישי/שבת פנויים בחודשיים הקרובים`,
-      detail: hotDates.map(d => formatDate(d, 'short')).join(' · '),
-      color: '#4F46E5',
-      bg: 'rgba(79,70,229,0.07)',
-      border: 'rgba(79,70,229,0.18)',
+      id: 'hotdates', icon: Star,
+      text: `${hotDates.length} ש"ש פנויים`,
+      color: '#4F46E5', bg: 'rgba(79,70,229,0.07)', border: 'rgba(79,70,229,0.2)',
     },
     pendingCount > 0 && {
-      id: 'pending',
-      icon: Clock,
-      text: `${pendingCount} הצעות ממתינות לסגירה`,
-      detail: 'שלח תזכורת ← פנה לזוגות',
-      color: '#7C3AED',
-      bg: 'rgba(124,58,237,0.07)',
-      border: 'rgba(124,58,237,0.18)',
+      id: 'pending', icon: Clock,
+      text: `${pendingCount} הצעות פתוחות`,
+      color: '#7C3AED', bg: 'rgba(124,58,237,0.07)', border: 'rgba(124,58,237,0.2)',
     },
     {
-      id: 'tip',
-      icon: Sparkles,
-      text: 'ימי חמישי הקרובים אטרקטיביים למכירה',
-      detail: 'תפוסת ימי חמישי באוגוסט — 0%',
-      color: '#0891B2',
-      bg: 'rgba(8,145,178,0.07)',
-      border: 'rgba(8,145,178,0.18)',
+      id: 'tip', icon: Sparkles,
+      text: 'ימי חמישי פנויים — הצע ללקוחות',
+      color: '#0891B2', bg: 'rgba(8,145,178,0.07)', border: 'rgba(8,145,178,0.18)',
     },
   ].filter(Boolean);
 
   return (
-    <div className="vd-ai-panel">
-      <div className="vd-ai-header">
-        <div className="vd-ai-brand">
-          <Sparkles size={14} />
-          <span>Choko AI</span>
-          <span className="vd-ai-badge">תובנות</span>
-        </div>
-        <span className="vd-ai-updated">עודכן זה עתה</span>
+    <div className="vd-ai-unified">
+      <div className="vd-ai-unified-head">
+        <Sparkles size={14} />
+        <span>Choko AI</span>
+        <span className="vd-ai-badge">תובנות</span>
       </div>
-      <div className="vd-ai-insights">
-        {insights.map(ins => {
-          const Icon = ins.icon;
+      <div className="vd-ai-chips">
+        {chips.map(chip => {
+          const Icon = chip.icon;
           return (
-            <div key={ins.id} className="vd-ai-insight" style={{ background: ins.bg, borderColor: ins.border }}>
-              <div className="vd-ai-insight-icon" style={{ color: ins.color }}>
-                <Icon size={15} strokeWidth={2.2} />
-              </div>
-              <div className="vd-ai-insight-body">
-                <div className="vd-ai-insight-text" style={{ color: ins.color }}>{ins.text}</div>
-                <div className="vd-ai-insight-detail">{ins.detail}</div>
-              </div>
-            </div>
+            <span
+              key={chip.id}
+              className="vd-ai-chip"
+              style={{ color: chip.color, background: chip.bg, borderColor: chip.border }}
+            >
+              <Icon size={11} strokeWidth={2.2} />
+              {chip.text}
+            </span>
           );
         })}
       </div>
@@ -890,11 +879,15 @@ function DayPanel({ dateStr, weddings, navigate, onClose }) {
     );
   }
 
-  const avail       = getAvailability(dateStr, weddings);
-  const events      = weddings.filter(w => w.date === dateStr);
-  const holidays    = getHolidaysForDate(dateStr);
-  const restriction = getRestrictionForDate(dateStr);
-  const suggestions = avail !== 'available' ? getSuggestedDates(dateStr, weddings, 4) : [];
+  const avail         = getAvailability(dateStr, weddings);
+  const events        = weddings.filter(w => w.date === dateStr);
+  const holidays      = getHolidaysForDate(dateStr);
+  const restriction   = getRestrictionForDate(dateStr);
+  const suggestions   = avail !== 'available' ? getSuggestedDates(dateStr, weddings, 4) : [];
+  const dayOfWeek     = new Date(dateStr).getDay();
+  const waitingCouples = avail === 'available'
+    ? WAITING_COUPLES.filter(c => c.preferDay === dayOfWeek).slice(0, 3)
+    : [];
 
   return (
     <div className="vd-day-panel">
@@ -973,6 +966,23 @@ function DayPanel({ dateStr, weddings, navigate, onClose }) {
           </>
         )}
       </div>
+
+      {waitingCouples.length > 0 && (
+        <div className="vd-waiting-couples">
+          <div className="vd-day-sug-title">
+            <Users size={11} style={{ display: 'inline', marginLeft: 4 }} />
+            זוגות ממתינים לתאריך פנוי:
+          </div>
+          {waitingCouples.map((c, i) => (
+            <div key={i} className="vd-waiting-row">
+              <span className="vd-waiting-name">{c.name}</span>
+              <a href={`tel:${c.phone}`} className="vd-waiting-phone" onClick={e => e.stopPropagation()}>
+                <Phone size={10} /> {c.phone}
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
 
       {suggestions.length > 0 && (
         <div className="vd-day-suggestions">
@@ -1136,8 +1146,8 @@ export default function VenueDashboard({ venue, navigate }) {
           <button className="venue-btn venue-btn--ghost" onClick={() => navigate({ page: 'live-venue-mode' })}>
             <Activity size={14} /> Live Venue Mode
           </button>
-          <button className="venue-btn venue-btn--primary" onClick={() => setShowAdd(true)}>
-            <Plus size={14} /> חתונה חדשה
+          <button className="venue-btn venue-btn--cta" onClick={() => setShowAdd(true)}>
+            <Plus size={15} /> + אירוע חדש
           </button>
         </div>
       </div>
