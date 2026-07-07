@@ -7,6 +7,8 @@
   z-index: 1;
 }
 
+/* Couple shell with fixed icon-rail sidebar: offset handled by .cs-spacer in couple.css */
+
 .app-sidebar {
   width: 240px;
   flex-shrink: 0;

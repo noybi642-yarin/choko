@@ -20,10 +20,12 @@ import VenueDashboard from './pages/VenueDashboard';
 import VenueBranding from './pages/VenueBranding';
 import VenueWedding from './pages/VenueWedding';
 import VenueClients from './pages/VenueClients';
+import VenueProposals from './pages/VenueProposals';
+import VenueReports from './pages/VenueReports';
+import CoupleSidebar from './components/CoupleSidebar';
 import LiveVenueMode from './pages/LiveVenueMode';
 import {
-  LayoutGrid, Settings, LogOut, ChevronDown,
-  Home, PlusCircle, Sparkles, Armchair, Map,
+  LayoutGrid, Settings, LogOut,
   Calendar, Users, FileText, BarChart2, Activity,
   Menu, X, ChevronLeft,
 } from 'lucide-react';
@@ -31,59 +33,14 @@ import {
 initStore();
 initVenueStore();
 
-// ── Couple sidebar ────────────────────────────────────────────────────────────
-function AppSidebar({ user, currentPage, navigate, onLogout }) {
-  return (
-    <aside className="app-sidebar">
-      <div className="sidebar-logo">choko<span className="logo-dot"/></div>
-      <nav className="sidebar-nav">
-        <button className={`sidebar-link${currentPage==='dashboard'?' active':''}`}
-          onClick={() => navigate({page:'dashboard'})}>
-          <Home size={15} style={{marginLeft:6}}/> האירועים שלי
-        </button>
-        <button className={`sidebar-link${currentPage==='event-create'?' active':''}`}
-          onClick={() => navigate({page:'event-create'})}>
-          <PlusCircle size={15} style={{marginLeft:6}}/> אירוע חדש
-        </button>
-        <button className={`sidebar-link${currentPage==='ai-assistant'?' active':''}`}
-          onClick={() => navigate({page:'ai-assistant'})}>
-          <Sparkles size={15} style={{marginLeft:6}}/> חברי הטוב AI
-        </button>
-        <button className={`sidebar-link${currentPage==='seating-plan'?' active':''}`}
-          onClick={() => navigate({page:'seating-plan',eventId:'evt-demo'})}>
-          <Armchair size={15} style={{marginLeft:6}}/> הושבת מוזמנים
-        </button>
-        <button className={`sidebar-link${currentPage==='venue-canvas'?' active':''}`}
-          onClick={() => navigate({page:'venue-canvas',eventId:'evt-demo'})}>
-          <Map size={15} style={{marginLeft:6}}/> תוכנית אולם
-        </button>
-        <button className={`sidebar-link${currentPage==='live-venue-mode'?' active':''}`}
-          onClick={() => navigate({page:'live-venue-mode', eventId:'evt-demo'})}>
-          🔴 Live Mode
-        </button>
-      </nav>
-      <div className="sidebar-bottom">
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">{user.name[0]}</div>
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{user.name}</div>
-            <div className="sidebar-user-email">{user.email}</div>
-          </div>
-        </div>
-        <button className="sidebar-logout" onClick={onLogout}>יציאה</button>
-      </div>
-    </aside>
-  );
-}
-
 // ── Venue sidebar ─────────────────────────────────────────────────────────────
 
 const VENUE_NAV_MAIN = [
   { key: 'venue-dashboard', icon: LayoutGrid, label: 'כל החתונות' },
   { key: 'calendar',        icon: Calendar,   label: 'לוח שנה',          soon: true },
   { key: 'clients',         icon: Users,      label: 'לקוחות' },
-  { key: 'proposals',       icon: FileText,   label: 'הצעות ואופציות',   soon: true },
-  { key: 'reports',         icon: BarChart2,  label: 'דוחות',            soon: true },
+  { key: 'proposals',       icon: FileText,   label: 'הצעות ואופציות' },
+  { key: 'reports',         icon: BarChart2,  label: 'דוחות' },
 ];
 
 const VENUE_NAV_SETTINGS = [
@@ -287,6 +244,12 @@ export default function App() {
           {route.page === 'clients' && (
             <VenueClients venue={venueUser} navigate={navigate}/>
           )}
+          {route.page === 'proposals' && (
+            <VenueProposals venue={venueUser} navigate={navigate}/>
+          )}
+          {route.page === 'reports' && (
+            <VenueReports venue={venueUser} navigate={navigate}/>
+          )}
           {route.page === 'venue-branding' && (
             <VenueBranding venue={venueUser} onVenueUpdate={handleVenueUpdate}/>
           )}
@@ -325,12 +288,12 @@ export default function App() {
 
   // ── Couple: logged-in app shell ─────────────────────────────────────────────
   return (
-    <div className="app-shell">
+    <div className="app-shell app-shell--rail">
       <div className="aurora-fixed" aria-hidden="true">
         <div className="aurora-layer"/>
         <div className="aurora-layer-2"/>
       </div>
-      <AppSidebar user={user} currentPage={route.page} navigate={navigate} onLogout={handleLogout}/>
+      <CoupleSidebar user={user} currentPage={route.page} navigate={navigate} onLogout={handleLogout}/>
       <main className="app-main">
         {route.page === 'dashboard'          && <Dashboard user={user} navigate={navigate}/>}
         {route.page === 'event-create'       && <EventCreate user={user} navigate={navigate}/>}
