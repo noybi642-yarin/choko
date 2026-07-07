@@ -7,6 +7,12 @@
   z-index: 1;
 }
 
+/* Couple shell with fixed icon-rail sidebar (CoupleSidebar) */
+.app-shell--rail .app-main { margin-right: 56px; }
+@media (max-width: 768px) {
+  .app-shell--rail .app-main { margin-right: 0; }
+}
+
 .app-sidebar {
   width: 240px;
   flex-shrink: 0;
