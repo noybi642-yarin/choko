@@ -76,19 +76,6 @@
 }
 .vp-search-input::placeholder { color: var(--venue-mute); opacity: 0.7; }
 
-/* CTA variant (used only by this screen) */
-.venue-btn--cta {
-  background: linear-gradient(135deg, var(--venue-primary) 0%, var(--venue-violet) 100%);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.32);
-  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
-}
-.venue-btn--cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(124,58,237,0.4);
-  filter: brightness(1.05);
-}
-
 /* ── KPI row ────────────────────────────────────────────────────────────────── */
 
 .vp-kpi {
